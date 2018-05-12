@@ -24,6 +24,7 @@ The provided directory named `SKELETON` is a sample working directory for your d
 flow. Within this directory all the steps mentioned in previous section will be performed, 6
 directories are set for 6 steps respectively. The structure of `SKELETON` working directory is
 shown below.
+
 ![SKELETON directory structure](SKELETON.png "SKELETON directory structure")
 
 Now we can establish the relationships of each directory to each step (from step 1 to step 6) in
@@ -92,6 +93,7 @@ the standard digital cells (like AND, XOR, DFF, etc.) is a must, in which abstra
 view, symbol view and schematic view are ready for later usage (some special cells may have some
 views missing). Necessary resources are provided by the foundry to be imported into Cadence to
 make such a library. For umc065 process, the deliverable content would be
+
 | Directory name/path | Description                                                                  |
 | ------------------- | ---------------------------------------------------------------------------- |
 | doc                 | A directory containing the files of databook.pdf, cell list etc              |
