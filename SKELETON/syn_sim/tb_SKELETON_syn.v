@@ -1,0 +1,1 @@
+../verilog/tb_SKELETON_syn.v

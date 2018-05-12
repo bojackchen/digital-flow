@@ -1,0 +1,47 @@
+# Environment setup for Design Compiler: (.synopsys_dc.setup)
+# Last Update: Fan Yang, 03/16/2014
+# Revised: Yasu Lu, 07/17/2015
+# Revised: Feng Chen, 03/27/2018
+
+#---- Defaults can be found in $SYNOPSYS/admin/setup/.synopsys_dc.setup ----#
+set company "IPEL, ECE Department, HKUST"
+set designer "Feng Chen"
+
+#---- General DC settings ----#
+# Disable skew for feedback loops
+set timing_self_loops_no_skew true
+# Set link command to be case sensitive for verilog
+set link_force_case case_sensitive
+# Bus name style
+set bus_naming_style {%s[%d]}
+# Specify name for command log file
+set sh_command_log_file command.log
+# Set options for several commands
+set text_print_command {lpr -Pcsps}
+set text_editor_command {vi %s &}
+
+#---- HDL read in settings ----#
+# Check out verilog license
+set hdl_preferred_license verilog
+# Enable inferred latch warning
+set hdlin_check_no_latch true
+
+#---- HDL write out settings ----#
+# Show unconnected pins in output netlist
+set verilogout_show_unconnected_pins true
+# Turn tri state nets to wire type
+set verilogout_no_tri true
+set verilogout_equation false
+
+#---- Define target, link and symbol technology libraries and search path ----#
+# Using tt corner for synthesis
+set target_library {uk65lscllmvbbl_120c25_tc.db}
+set link_library {uk65lscllmvbbl_120c25_tc.db}
+set symbol_library {uk65lscllmvbbl.sdb basic.sdb US.8ths.sdb}
+set search_path { . \
+  /usr/eelocal/synopsys/syn-vi2013.12-sp5-5/libraries/syn \
+  /home/ipel1/fchenaf/VerilogDesign/umc065_digital/synopsys \
+}
+
+# Define design library, synthesis by default
+define_design_lib synthesis -path synthesis
