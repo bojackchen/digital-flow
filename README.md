@@ -12,12 +12,16 @@ digital layout with specified ports to be integrated with other analog layout.
 ## Standard digital design flow
 A standard digital design flow consists of
 1. RTL HDL design
-2. Behavior simulation (platform: Synopsys &reg; VCS)
-3. Logic synthesis (platform: Synopsys &reg; Design Compiler)
-4. Post-synthesis simulation (platform: Synopsys &reg; VCS)
-5. Place & route (platform: Cadence &reg; Encounter Digital Implementation)
-6. Post-layout simulation (platform: Synopsys &reg; VCS)
-7. Integration with analog part (platform: Cadence &reg;)
+2. Behavior simulation (platform: Synopsys&reg; VCS)
+3. Logic synthesis (platform: Synopsys&reg; Design Compiler)
+4. Post-synthesis simulation (platform: Synopsys&reg; VCS)
+5. Place & route (platform: Cadence&reg; Encounter Digital Implementation)
+6. Post-layout simulation (platform: Synopsys&reg; VCS)
+7. Integration with analog part (platform: Cadence&reg;)
+
+Note that the above steps are iterative. For example, after logic synthesis, it is possible
+that the design no longer meets the design specification, thus you need to fall back to
+step 3 or even step 2 and 1 to find the reason and fix the problem.
 
 ## SKELETON working directory
 The provided directory named `SKELETON` is a sample working directory for your digital design
@@ -25,7 +29,7 @@ flow. Within this directory all the steps mentioned in previous section will be 
 directories are set for 6 steps respectively. The structure of `SKELETON` working directory is
 shown below.
 
-![SKELETON directory structure](SKELETON.png "SKELETON directory structure")
+![SKELETON directory structure](dir_layout.png "SKELETON directory structure")
 
 Now we can establish the relationships of each directory to each step (from step 1 to step 6) in
 the flow above.
@@ -55,7 +59,7 @@ If you are not [IPEL](http://www.ece.ust.hk/~ipel) members or are not using the 
 as in this tutorial, it should still be adequate enough for you to establish everything
 accordingly.
 
-#### Linux command line environment
+### Linux command line environment
 First of all, it is very important for users to get used to the linux development
 environment, especially the linux command line. A lot of the operations in the design flow
 are done with linux command line and sometimes only possible to be done with command line.
@@ -68,13 +72,13 @@ IPEL linux servers. Furthermore, umc065 process is used as example, so if you ar
 other process, you are on your own to find out all the corresponding resources vital for
 digital design flow.
 
-#### Tool chain setup
+### Tool chain setup
 As mentioned above, we have to use different sets of tool chains to complete each step. For
 [ipel](http://www.ece.ust.hk/~ipel) members, all the required tools are available on the linux
 server.
-- Synopsys &reg; VCS
-- Synopsys &reg; Design Compiler
-- Cadence &reg; Encounter Digital Implementation
+- Synopsys&reg; VCS
+- Synopsys&reg; Design Compiler
+- Cadence&reg; Encounter Digital Implementation
 
 To setup the tools properly, you should put the following lines to your `~/.cshrc_user` so that
 they could be loaded by default each time you start a terminal.
@@ -87,7 +91,7 @@ source /usr/eelocal/cadence/edi142/.cshrc               # Cadence  EDI
 Currently (May 2018) all these tools are up-to-date. Update the tools if newer versions are
 available.
 
-#### Digital standard cell library
+### Digital standard cell library
 The digital standard cell library should be prepared in prior. A Cadence library containing all
 the standard digital cells (like AND, XOR, DFF, etc.) is a must, in which abstract view, layout
 view, symbol view and schematic view are ready for later usage (some special cells may have some
@@ -110,17 +114,16 @@ make such a library. For umc065 process, the deliverable content would be
 | milkyway            | A directory containing ICC technology files and database                     |
 
 ## Step 1: RTL HDL design
-The very first step of the digital design flow is to prepare your verilog HDL design. A skeleton
-verilog file `SKELETON.v` is already provided under `SKELETON/verilog` along with 3 testbench
-files, one for behavior simulation, one for post-synthesis simulation and one for post-layout
-simulation. The testbench files are exactly the same except for the file name and the inclusion of
-the design module to be tested.
+The very first step of the digital design flow is to prepare your verilog HDL design based on
+the desired functional specification. A skeleton verilog file `SKELETON.v` is already provided
+under `SKELETON/verilog` along with 3 testbench files, one for behavior simulation, one for
+post-synthesis simulation and one for post-layout simulation. The testbench files are exactly
+the same except for the file name and the inclusion of the design module to be tested.
 
-You should first complete your verilog HDL design and also testbench files. By default there is
-only one design file under `SKELETON/verilog`. If your design is gonna have multiple modules,
-create new files under `SKELETON/verilog` and remember to include them while compiling (modify
-`SKELETON/Makefile`). Another recommended solution would be placing all your modules inside one
-design file so that you do not need to modify `SKELETON/Makefile`.
+By default there is only one design file under `SKELETON/verilog`. If your design is gonna have
+multiple modules, create new files under `SKELETON/verilog` and remember to include them while
+compiling (modify `SKELETON/Makefile`). Another recommended solution would be placing all your
+modules inside one design file so that you do not need to modify `SKELETON/Makefile`.
 
 Unfortunately not every verilog design is synthesizable. A poorly written verilog module may
 violate certain synthesis rules so that you cannot proceed. Here are a few suggestions that
@@ -131,13 +134,13 @@ could possibly help you avoid this.
 - Do not assign to `reg` type signal in multiple `always` blocks
 
 ## Step 2: Behavior simulation
-#### Prerequisite
-- Tool: Synopsys &reg; VCS
+### Prerequisite
+- Tool: Synopsys&reg; VCS
 - Input: Verilog HDL design and corresponding testbench
 
 The working directory is the same directory as `Makefile`.
 
-#### Execution
+### Execution
 When you have prepared your verilog HDL design and corresponding testbench files (for behavior
 simulation it is `SKELETON/verilog/tb_SKELETON.v`), behavior simulation can be carried out to
 verify the functionality of your design. But remember that if you have multiple design files it is
@@ -165,21 +168,21 @@ logic synthesis consists of 3 steps.
 - Logic optimization
 - Mapping
 
-All processes are included when you run Synopsys &reg; Design Compiler, but you won't be aware of
+All processes are included when you run Synopsys&reg; Design Compiler, but you won't be aware of
 the different stages when it is running. Translation step would translate your RTL HDL to GTECH
 HDL, where GTECH is a general, virtual and technology-independent digital cell library. After that
 GTECH HDL is further optimized and mapped to the target technology by replacing the generic
 GTECH gates with technology-specific gates from your standard digital cell library. Finally the
 technology-specific gate-level netlist is derived.
 
-#### Prerequisite
-- Tool: Synopsys &reg; Design Compiler
+### Prerequisite
+- Tool: Synopsys&reg; Design Compiler
 - Input: standard digital cell library, `.synopsys_dc.setup`, `run_dc.tcl` and `SKELETON.v`
   - Standard digital cell library, called synthesis library later on in this section, is the
   technology-specific synthesis library provided by the foundry which contains all the standard
   digital cells that will be used by the synthesis tool to map your design to physically
   implementable gate-level netlist and also calculate the corresponding parameters.
-  - `.synopsys_dc.setup` is the default environment configuration for Synopsys &reg; Design
+  - `.synopsys_dc.setup` is the default environment configuration for Synopsys&reg; Design
   Compiler. For example, it sets up the path to the synthesis library. It needs to be put at the
   directory where you start Design Compiler to take effect.
   - `run_dc.tcl` contains the design constraints applied to the current design and the commands to
@@ -189,7 +192,7 @@ technology-specific gate-level netlist is derived.
 
 The working directory is the same directory as `Makefile`.
 
-#### Design constraints
+### Design constraints
 During synthesis, design constraints must be applied to constrain the Design Compiler. There are
 infinite numbers of designs to realize the desired function, but with design constraints there are
 only limited solutions, and Design Compiler will try to find you one that meets the constraints
@@ -197,15 +200,15 @@ if possible. It is possible that the resultant design cannot satisfy all the con
 case you should change your constraints accordingly.
 
 Some typical constraints that are commonly applied would be
-- create_clk
-- create_generated_clock
-- set_clock_uncertainty
-- set_input_delay
-- set_driving_cell
-- set_output_delay
-- set_load
-- set_max_capacitance
-- set_max_area
+- create\_clk
+- create\_generated\_clock
+- set\_clock\_uncertainty
+- set\_input\_delay
+- set\_driving\_cell
+- set\_output\_delay
+- set\_load
+- set\_max\_capacitance
+- set\_max\_area
 
 Details about design constraints could be found on the Internet or in the books about logic
 synthesis. Be careful about assigning design constraints and adding or removing certain constraint
@@ -214,7 +217,7 @@ reasonable compromise between timing and area/power for the output result. Prope
 constraints lead to satisfying performance, while improper design constraints lead to poor
 circuit.
 
-#### Execution
+### Execution
 After your design has passed the behavior simulation, you could proceed to synthesize the design.
 Synthesis is run under `SKELETON/syn` directory, where the products are also placed. Before you
 run synthesis, make sure the 3 files named `.synopsys_dc.setup`, `run_dc.tcl` and `SKELETON.v`
@@ -228,7 +231,7 @@ log file named `dc.log` will be created under `SKELETON/syn` for you to check th
 highly recommended that you closely check the reports and log file to verify if synthesis is
 successfully completed and the constraints are met or certain violations can be ignored.
 
-#### Output
+### Output
 
 3 important logic synthesis products named `SKELETON.sdc`, `SKELETON.sdf` and `SKELETON_syn.v`
 are generated under `SKELETON/syn` to proceed.
@@ -243,8 +246,8 @@ meaning that it is indeed physically implementable.
 
 ## Step 4: Post-synthesis simulation
 
-#### Prerequisite
-- Tool: Synopsys &reg; VCS
+### Prerequisite
+- Tool: Synopsys&reg; VCS
 - Input: behavior model of the standard digital cell library, gate-level netlist from last step,
 corresponding testbench and sdf file
   - Behavior model of the standard digital cell library is needed, since after synthesis the
@@ -258,7 +261,7 @@ corresponding testbench and sdf file
 
 The working directory is the same directory as `Makefile`.
 
-#### Execution
+### Execution
 When you have your 3 synthesized products ready under `SKELETON/syn`, the previously red, invalid
 symbolic link `SKELETON/syn_sim/SKELETON_syn.v` and `SKELETON/syn_sim/SKELETON.sdf` are now
 **valid**. The `SKELETON.sdf` file will be back-annotated during simulation to include all the

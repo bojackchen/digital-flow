@@ -54,9 +54,9 @@ set_dont_touch_network $clk_name
 #---- Input transition and delay, and output delay and fanout ----#
 set_input_transition 0.2 \
   [remove_from_collection [all_inputs] [get_ports clk]]
-set_input_delay 0.8 -max -clock $clk_name \
+set_input_delay 2.4 -max -clock $clk_name \
   [remove_from_collection [all_inputs] [get_ports clk]]
-set_output_delay 0.8 -max -clock $clk_name [all_output]
+set_output_delay 2.4 -max -clock $clk_name [all_output]
 set_fanout_load 4.0 [all_outputs]
 
 #---- Output load and assumed input load ----#
@@ -67,8 +67,8 @@ set_driving_cell -lib_cell INVM1W -no_design_rule \
 
 #---- Maximum delay, capacitance, transition, fanout and area constraint ----#
 set_max_delay [expr $clk_period * 0.75] -from [get_ports rst] -to [all_outputs]
-set_max_capacitance 0.5 $DesignName
-set_max_transition 1.0 $DesignName
+set_max_capacitance 0.2 $DesignName
+set_max_transition 0.5 $DesignName
 set_max_fanout 10.0 $DesignName
 set_max_area 0.0
 
