@@ -60,21 +60,21 @@ as in this tutorial, it should still be adequate enough for you to establish eve
 accordingly.
 
 ### Linux command line environment
-First of all, it is very important for users to get used to the linux development
-environment, especially the linux command line. A lot of the operations in the design flow
-are done with linux command line and sometimes only possible to be done with command line.
+First of all, it is very important for users to get used to the Linux development
+environment, especially the Linux command line. A lot of the operations in the design flow
+are done with Linux command line and sometimes only possible to be done with command line.
 Thus, you must get familiar with the command line working environment.
 
 Another prerequisite would be that you have all your tool chains properly set up and necessary
 resources regarding digital design provided by the foundry. For example, this tutorial is for
 [IPEL](http://www.ece.ust.hk/~ipel) members, and the tool chains are specified according to
-IPEL linux servers. Furthermore, umc065 process is used as example, so if you are using
+IPEL Linux servers. Furthermore, umc065 process is used as example, so if you are using
 other process, you are on your own to find out all the corresponding resources vital for
 digital design flow.
 
 ### Tool chain setup
 As mentioned above, we have to use different sets of tool chains to complete each step. For
-[ipel](http://www.ece.ust.hk/~ipel) members, all the required tools are available on the linux
+[ipel](http://www.ece.ust.hk/~ipel) members, all the required tools are available on the Linux
 server.
 - Synopsys&reg; VCS
 - Synopsys&reg; Design Compiler
@@ -162,8 +162,9 @@ Desired functionality and synthesizable verilog HDL design are the requirements 
 to the next step.
 
 ## Step 3: Logic synthesis
-Logic synthesis is the step that transforms your idea to physically implementable design. Genrally
-logic synthesis consists of 3 steps.
+Synthesis is the all encompassing, generic term for the process of achieving an optimal gate-level
+netlist from HDL code. Logic synthesis transforms your idea to physically implementable design.
+Genrally logic synthesis consists of 3 steps.
 - Translation
 - Logic optimization
 - Mapping
