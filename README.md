@@ -280,3 +280,8 @@ Check if there is any syntax error and also **sdf annotation error**. Again, the
 files and produced executive are stored in `SKELETON/syn_sim`. The waveform after simulation
 would present you signal latency as well as possible glitches. Make sure that **functionality**
 is still achieved, otherwise you may need to go back and find the reason.
+
+## Reference
+1. Kurup, Pran, and Taher Abbasi. Logic synthesis using Synopsys&reg;. Springer Science & Business Media, 2012.
+2. Bhatnagar, Himanshu. Advanced ASIC Chip Synthesis: Using Synopsys&reg; Design CompilerTM Physical CompilerTM and PrimeTime&reg;. Springer Science & Business Media, 2007.
+3. 虞希清. 专用集成电路设计实用教程. 浙江大学出版社, 2007.
