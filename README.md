@@ -163,8 +163,8 @@ to the next step.
 
 ## Step 3: Logic synthesis
 Synthesis is the all encompassing, generic term for the process of achieving an optimal gate-level
-netlist from HDL code. Logic synthesis transforms your idea to physically implementable design.
-Genrally logic synthesis consists of 3 steps.
+netlist from HDL code [^2]. Logic synthesis transforms your idea to physically implementable design.
+Genrally logic synthesis consists of 3 steps [^1].
 - Translation
 - Logic optimization
 - Mapping
@@ -200,7 +200,7 @@ only limited solutions, and Design Compiler will try to find you one that meets 
 if possible. It is possible that the resultant design cannot satisfy all the constraints. In that
 case you should change your constraints accordingly.
 
-Some typical constraints that are commonly applied would be
+Some typical constraints that are commonly applied would be [^1]
 - create\_clk
 - create\_generated\_clock
 - set\_clock\_uncertainty
@@ -212,11 +212,11 @@ Some typical constraints that are commonly applied would be
 - set\_max\_area
 
 Details about design constraints could be found on the Internet or in the books about logic
-synthesis. Be careful about assigning design constraints and adding or removing certain constraint
-types, because the design constraints play a critical role in the synthesis process for finding a
-reasonable compromise between timing and area/power for the output result. Proper design
-constraints lead to satisfying performance, while improper design constraints lead to poor
-circuit.
+synthesis [^1] [^2] [^3]. Be careful about assigning design constraints and adding or removing
+certain constraint types, because the design constraints play a critical role in the synthesis
+process for finding a reasonable compromise between timing and area/power for the output result.
+Proper design constraints lead to satisfying performance, while improper design constraints lead
+to poor circuit.
 
 ### Execution
 After your design has passed the behavior simulation, you could proceed to synthesize the design.
@@ -282,6 +282,6 @@ would present you signal latency as well as possible glitches. Make sure that **
 is still achieved, otherwise you may need to go back and find the reason.
 
 ## Reference
-[1] Kurup, Pran, and Taher Abbasi. Logic synthesis using Synopsys&reg;. Springer Science & Business Media, 2012.
-[2] Bhatnagar, Himanshu. Advanced ASIC Chip Synthesis: Using Synopsys&reg; Design Compiler&trade; Physical Compiler&trade; and PrimeTime&reg;. Springer Science & Business Media, 2007.
-[3] 虞希清. 专用集成电路设计实用教程. 浙江大学出版社, 2007.
+[^1] 虞希清. 专用集成电路设计实用教程. 浙江大学出版社, 2007.
+[^2] Kurup, Pran, and Taher Abbasi. Logic synthesis using Synopsys&reg;. Springer Science & Business Media, 2012.
+[^3] Bhatnagar, Himanshu. Advanced ASIC Chip Synthesis: Using Synopsys&reg; Design Compiler&trade; Physical Compiler&trade; and PrimeTime&reg;. Springer Science & Business Media, 2007.
