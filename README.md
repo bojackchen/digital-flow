@@ -127,11 +127,23 @@ modules inside one design file so that you do not need to modify `SKELETON/Makef
 
 Unfortunately not every verilog design is synthesizable. A poorly written verilog module may
 violate certain synthesis rules so that you cannot proceed. Here are a few suggestions that
-could possibly help you avoid this.
+could possibly help you avoid this [1], [2].
 - Avoid combinational feedback
-- Avoid hidden latches (always have `default` for `case` statement and `else` for `if` statement)
+- Avoid hidden inferred latches (always have `default` for `case` statement and `else` for
+`if` statement)
 - Always include a complete sensitivity list in each `always` block
 - Do not assign to `reg` type signal in multiple `always` blocks
+
+In addition to the above, the following are general guidelines that every designer shoud be aware
+of. There is no fixed rule to adhere to these guidelines, however, following them vastly improves
+the performance of the synthesized logic, and may produce a cleaner design that is well suited
+for automating the synthesis process [1].
+- Clock logic including clock gating logic and reset generation should be kept in one block, to
+be synthesized once and not touched again
+- Avoid multiple clocks per block
+- No glue logic at top level
+- Do not create unnecessary hierarchy
+- Register all outputs whenever practical
 
 ## Step 2: Behavior simulation
 ### Prerequisite
@@ -163,8 +175,8 @@ to the next step.
 
 ## Step 3: Logic synthesis
 Synthesis is the all encompassing, generic term for the process of achieving an optimal gate-level
-netlist from HDL code [2]. Logic synthesis transforms your idea to physically implementable design.
-Genrally logic synthesis consists of 3 steps [1].
+netlist from HDL code [3]. Logic synthesis transforms your idea to physically implementable design.
+Genrally logic synthesis consists of 3 steps [4].
 - Translation
 - Logic optimization
 - Mapping
@@ -200,7 +212,7 @@ only limited solutions, and Design Compiler will try to find you one that meets 
 if possible. It is possible that the resultant design cannot satisfy all the constraints. In that
 case you should change your constraints accordingly.
 
-Some typical constraints that are commonly applied would be [1]
+Some typical constraints that are commonly applied would be [4]
 - create\_clk
 - create\_generated\_clock
 - set\_clock\_uncertainty
@@ -212,7 +224,7 @@ Some typical constraints that are commonly applied would be [1]
 - set\_max\_area
 
 Details about design constraints could be found on the Internet or in the books about logic
-synthesis [1] [2] [3]. Be careful about assigning design constraints and adding or removing
+synthesis [1], [3], [4]. Be careful about assigning design constraints and adding or removing
 certain constraint types, because the design constraints play a critical role in the synthesis
 process for finding a reasonable compromise between timing and area/power for the output result.
 Proper design constraints lead to satisfying performance, while improper design constraints lead
@@ -282,8 +294,12 @@ would present you signal latency as well as possible glitches. Make sure that **
 is still achieved, otherwise you may need to go back and find the reason.
 
 ## Reference
-[1] 虞希清. 专用集成电路设计实用教程. 浙江大学出版社, 2007.
+[1] Bhatnagar, Himanshu. Advanced ASIC Chip Synthesis: Using Synopsys&reg; Design Compiler&trade;
+Physical Compiler&trade; and PrimeTime&reg;. Springer Science & Business Media, 2007.
 
-[2] Kurup, Pran, and Taher Abbasi. Logic synthesis using Synopsys&reg;. Springer Science & Business Media, 2012.
+[2] Lee, Weng Fook. Verilog coding for logic synthesis. Wiley-interscience, 2003.
 
-[3] Bhatnagar, Himanshu. Advanced ASIC Chip Synthesis: Using Synopsys&reg; Design Compiler&trade; Physical Compiler&trade; and PrimeTime&reg;. Springer Science & Business Media, 2007.
+[3] Kurup, Pran, and Taher Abbasi. Logic synthesis using Synopsys&reg;. Springer Science & Business
+Media, 2012.
+
+[4] 虞希清. 专用集成电路设计实用教程. 浙江大学出版社, 2007.
