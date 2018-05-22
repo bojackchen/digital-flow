@@ -135,7 +135,7 @@ could possibly help you avoid this [1], [2].
 - Do not assign to `reg` type signal in multiple `always` blocks
 
 In addition to the above, the following are general guidelines that every designer shoud be aware
-of. There is no fixed rule to adhere to these guidelines, however, following them vastly improves
+of. There is no fixed rule adhere to these guidelines, however, following them vastly improves
 the performance of the synthesized logic, and may produce a cleaner design that is well suited
 for automating the synthesis process [1].
 - Clock logic including clock gating logic and reset generation should be kept in one block, to
@@ -212,16 +212,20 @@ only limited solutions, and Design Compiler will try to find you one that meets 
 if possible. It is possible that the resultant design cannot satisfy all the constraints. In that
 case you should change your constraints accordingly.
 
-Some typical constraints that are commonly applied would be [4]
+Some typical constraints that are commonly applied would be [1], [4]
 - create\_clk
 - create\_generated\_clock
+- set\_dont\_touch
+- set\_clock}\_latency
 - set\_clock\_uncertainty
+- set\_propagated\_clock
 - set\_input\_delay
 - set\_driving\_cell
 - set\_output\_delay
 - set\_load
 - set\_max\_capacitance
 - set\_max\_area
+- set\_max\_fanout
 
 Details about design constraints could be found on the Internet or in the books about logic
 synthesis [1], [3], [4]. Be careful about assigning design constraints and adding or removing
