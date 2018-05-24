@@ -249,7 +249,6 @@ highly recommended that you closely check the reports and log file to verify if 
 successfully completed and the constraints are met or certain violations can be ignored.
 
 ### Output
-
 3 important logic synthesis products named `SKELETON.sdc`, `SKELETON.sdf` and `SKELETON_syn.v`
 are generated under `SKELETON/syn` to proceed.
 - `SKELETON.sdc` is a **s**ynopsys **d**esign **c**onstraint file used later in layout generation.
@@ -262,7 +261,6 @@ the original verilog HDL design. All the digital gates are from your specified s
 meaning that it is indeed physically implementable.
 
 ## Step 4: Post-synthesis simulation
-
 ### Prerequisite
 - Tool: Synopsys&reg; VCS
 - Input: behavior model of the standard digital cell library, gate-level netlist from last step,
@@ -297,6 +295,189 @@ files and produced executive are stored in `SKELETON/syn_sim`. The waveform afte
 would present you signal latency as well as possible glitches. Make sure that **functionality**
 is still achieved, otherwise you may need to go back and find the reason.
 
+## Step 5: Place & route
+With a clean and optimized netlist, it is ready to transfer the design to its physical form,
+using the layout tool. The place & route process is complicated and can be condensed to several
+steps as listed below [1], [3].
+- Data Preparation & Validation
+- Flow Preparation
+- Pre-Placement
+- Floorplanning
+- Powerplanning
+- Placement
+- Pre-CTS
+- Clock Tree Synthesis (CTS)
+- Post-CTS
+- Detail Routing
+- Post-Route
+- Timing Signoff
+
+While **static timing analysis (STA)** is executed across the whole flow to ensure timing
+closure at the end of the flow or mark the necessity of iteration between synthesis and P&R.
+
+A more complete implementation flow is shown below [5]. It is not necessary to include all.
+
+![Complete EDI timing closure flow](encounter_flow.jpg "Complete EDI timing closure flow")
+
+### Data preparation & validation
+#### Preparation
+- Tool: Cadence&reg; EDI
+- Input
+  - Timing libraries, containing the timing of all standard digital cells for each corner
+  - Physical libraries, containing the abstract defined for every standard digital cell,
+  and the technology LEF file from process foundry
+  - Captable or QRC tech file for RC extraction
+  - Output from synthesis (netlist and sdc)
+  - Multi-Mode Multi-Corner (MMMC) setup for analyzing and optimizing the design over multiple
+  operating conditions and process corners
+
+#### Validation
+After the preparation of all the necessary data, start encounter by typing `encounter` in terminal.
+The encounter console would occupy the original terminal for you to run commands. To import the
+design, type
+```console
+encounter 1> source vars.globals
+encounter 1> init_design
+```
+
+Encounter will load the design and check the run environment for any missing setup or the design
+for any problems and highlight them.
+
+#### Optional check
+You could proceed to the next step now, but alternatively there are several things you can check.
+Run `checkDesign -all` command to check for missing or inconsistent library and design data, and
+run `check_timing -verbose` to report timing problems that the Common Timing Engine (CTE) sees.
+Run the command below to check the zero wire-load model timing to get an idea of how much effort
+will be required to close timing [5].
+```console
+encounter 1> check_timing -verbose
+encounter 1> checkDesign -all
+encounter 1> timeDesign -prePlace
+```
+
+### Flow preparation
+#### Design mode
+Setting the design mode and understanding how extraction and timing analysis are used during the
+flow are important for achieving timing closure [5]. This setting affects globally throughout
+the whole flow.
+```
+encounter 1> setDesignMode -process 65 -flowEffort high
+```
+
+As indicated above, `-process` option sets the process technology you are using so that it changes
+the process technology dependent default settings globally. The `-flowEffort` options specifies
+the effort level for every super command such as `placeDesign`, `optDesign` and `routeDesign`.
+
+#### Extraction
+Resistance and Capacitance (RC) extraction using the `extractRC` command is run frequently in the
+flow. Set the extraction engine and effort level similarly. The first command is used before detail
+routing while the second command should be run when detail routing is finished.
+```console
+encounter 1> setExtractRCMode -engine preRoute
+encounter 1> setExtractRCMode -engine postRoute -effortLevel medium
+```
+
+The `-effortLevel` option controls which extractor is used when postRoute engine is used.
+- `low` invokes the native detailed extraction engine. This is the default setting.
+- `medium` invokes the Turbo QRC (TQRC) extraction engine. TQRC is the default engine for process
+nodes of 65 nm and below whenever Quantus techfiles are available.
+- `high` invokes the Integrated QRC (IQRC) extraction engine, which requires a Quantus QRC license.
+- `signoff` invokes the Standalone Quantus QRC extraction engine. It provided the highest accuracy,
+and obviously requires a Quantus QRC license.
+
+#### Timing analysis
+Timing analysis is typically run after each step in the timing closure flow using the `timeDesign`
+command. If timing violation occurs, Global Timing Debug (GTD) GUI is recommended to analyze and
+debug the results. The initial timing analysis should be performed after pre-CTS optimization.
+
+### Pre-Placement
+The goals of pre-placement Optimization are to optimize the netlist to
+1. Improve the logic structure
+2. Reduce congestion
+3. Reduce area
+4. Improve timing
+
+In some situations, the input netlist from synthesis is not a good candidate for placement because
+it might contain buffer trees or logic that is poorly structured for timing closure. It can be
+accomplished by running `deleteBufferTree` and `deleteClockTree` commands to claim some area by
+deleting buffer and double-inverter (by default, `deleteBufferTree` is run by `placeDesign`).
+
+For designs where the logical structure or high congestion are the problems, restructuring or
+remapping the cells can provide better results. Use the `runN2NOpt` to perform netlist-to-netlist
+optimization.
+
+### Floorplanning
+Floorplanning targets at producing a floor plan with reasonable area, enclosing timing and no
+routing congestion. It is recommended that an initial, prototyping mode floorplan can be run
+for faster turnaround to get a baseline placement. This is optional, but if your design is apt
+to have placement or routability problems, it is recommended that a prototyping floorplan and
+placement be run in prior.
+```console
+encounter 1> setPlaceMode -fp true
+```
+
+When you are certain that your design can be properly placed and routed, run the command to
+specify floorplan, where "1" is the aspect ratio, "0.6" is the core ultilization and "8" is
+the space reserved for power rings at the top, bottom, left and right. Apply proper values
+for your own design.
+```console
+encounter 1> floorPlan -site CORE -r 1 0.6 8 8 8 8
+```
+
+### Powerplanning
+#### Global net connection
+After the floorplan, the spaces for power rings as well as the power and ground rails of the
+standard digital cells are in place. It is possible now to execute power plan. Global net
+connections should be properly defined using the `globalNetConnect` command, or using the GUI
+through `Power -> Connect Global Nets`. Totally there are 4 sets of entries required.
+
+| Entry             | Set 1    | Set 2    | Set 3    | Set 4    |
+| ----------------- |:--------:|:--------:|:--------:|:--------:|
+| Pin Name(s)       | VDD      | VSS      |          |          |
+| Instance Basename | *        | *        | *        | *        |
+| Tie High          |          |          | selected |          |
+| Tie Low           |          |          |          | selected |
+| Apply All         | selected | selected | selected | selected |
+| To Global Net     | VDD      | VSS      | VDD      | VSS      |
+
+```
+encounter 1> globalNetConnect VDD -type pgpin -pin VDD -inst *
+encounter 1> globalNetConnect VSS -type pgpin -pin VSS -inst *
+encounter 1> globalNetConnect VDD -type tiehi -inst *
+encounter 1> globalNetConnect VSS -type tielo -inst *
+```
+
+#### Power ring
+The reserved power ring width is specified in floor plan and now it is time to add the power ring
+surrounding the core area. Access through `Power -> Power Planning -> Add Ring` and specify the
+parameters needed to finish the power ring setup. By default a VDD ring and a VSS ring are created
+around the core area with VDD ring inside.
+
+Another optional power plan is the power stripe running vertically. If you need it, access through
+`Power -> Power Planning -> Add Stripe`.
+
+#### Power routing
+The `sroute` command is ultilized to route the power/ground structures. Access through
+`Route -> Special Route` to route the block pins, pad pins, pad rings, floating stripes, etc.
+After that you would at lease have horizontal ME1 to connect all the VDD pins and VSS pins for
+the standard digital cells.
+
+### Placement
+
+### Pre-CTS
+
+### CTS
+
+### Post-CTS
+
+### Detail Routing
+
+### Post-Route
+
+### Timing Signoff
+
+### Output
+
 ## Reference
 [1] Bhatnagar, Himanshu. Advanced ASIC Chip Synthesis: Using Synopsys&reg; Design Compiler&trade;
 Physical Compiler&trade; and PrimeTime&reg;. Springer Science & Business Media, 2007.
@@ -307,3 +488,5 @@ Physical Compiler&trade; and PrimeTime&reg;. Springer Science & Business Media, 
 Media, 2012.
 
 [4] 虞希清. 专用集成电路设计实用教程. 浙江大学出版社, 2007.
+
+[5] Cadence&reg;. EDI System User Guide. Cadence Design Systems Inc., 2015.

@@ -1,0 +1,4 @@
+v2lvs -v SKELETON_encounter.v -o SKELETON.sp -s /usr/eelocal/umc065/umc065_digital/versionB03/lvs_netlist/uk65lscllmvbbl_vbp_vbn.cdl -s0 VBN -s1 VBP -addpin VDD -addpin VSS &&\
+sed -i 's/\[/\</g' SKELETON.sp &&\
+sed -i 's/\]/\>/g' SKELETON.sp &&\
+sed -i '/ENDS/i*.CONNECT VDD VBP\n*.CONNECT VSS VBN' SKELETON.sp

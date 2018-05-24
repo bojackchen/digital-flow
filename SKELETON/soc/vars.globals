@@ -1,0 +1,37 @@
+###############################################################
+# EDI Global Variables
+# Environment: Cadence Encounter 10.1x
+# ------------------------------------------------(HKUST IPEL)
+# Update: Fan Yang, 28/03/2014
+# Update: Feng Chen, 10/04/2018
+###############################################################
+
+# Set MMMCLib path
+set MMMCLib /home/ipel1/fchenaf/VerilogDesign/MMMCLib
+# Set structural Verilog file (from Synopsys synthesis)
+set init_verilog {SKELETON_syn.v}
+# Set top module name
+set init_design {SKELETON}
+# Set .lef file
+set init_lef_file "$MMMCLib/uk65lscllmvbbl_8m2t2f.lef $MMMCLib/uk65lscllmvbbl.lef"
+# Set .sdc file
+set MySDCfile {SKELETON.sdc}
+# Set .lib file
+set MyTimeLibTyp "$MMMCLib/uk65lscllmvbbl_120c25_tc.lib"
+set MyTimeLibMin "$MMMCLib/uk65lscllmvbbl_132c-40_bc.lib"
+set MyTimeLibMax "$MMMCLib/uk65lscllmvbbl_108c125_wc.lib"
+# Set qrcTechFile (Cap Table is obsolete)
+set MyqrcTechFileTyp   "$MMMCLib/qrcTechFileTyp"
+set MyqrcTechFileCmin  "$MMMCLib/qrcTechFileCmin"
+set MyqrcTechFileCmax  "$MMMCLib/qrcTechFileCmax"
+set MyqrcTechFileRCmin "$MMMCLib/qrcTechFileRCmin"
+set MyqrcTechFileRCmax "$MMMCLib/qrcTechFileRCmax"
+# Set temperature
+set MyTempTT {25}
+set MyTempFF {-40}
+set MyTempSS {125}
+# Set MMMC tcl file
+set init_mmmc_file {mmmc.tcl}
+# Set names of power and ground nets
+set init_pwr_net {VDD}
+set init_gnd_net {VSS}

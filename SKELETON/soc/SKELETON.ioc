@@ -1,0 +1,22 @@
+######################################################
+#                                                    #
+#  Cadence Design Systems, Inc.                      #
+#  Cadence(R) Encounter(TM) IO Assignments           #
+#                                                    #
+######################################################
+
+Version: 3
+
+# Encounter IO layout Script
+
+#------------ West ----------------#
+Offset: 4
+
+Pin: SKELETON_INPUT W 3 0.400 0.400
+Skip: 4
+
+#------------ East ----------------#
+Offset: 4
+
+Pin: SKELETON_OUTPUT E 3 0.400 0.400
+Skip: 4
