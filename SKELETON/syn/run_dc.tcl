@@ -24,7 +24,7 @@ set DesignName SKELETON
 
 #---- Start to analyze, elaborate and uniquify ----#
 analyze -format verilog -library synthesis $DesignName.v
-elaborate $DesignName -library synthesis -architecture verilog -update
+elaborate $DesignName -library synthesis -architecture verilog
 uniquify
 
 #---- All constraints are listed below ----#
@@ -75,13 +75,13 @@ set_max_area 0.0
 # Remove assign statements in verilog netlist
 set_fix_multiple_port_nets -all -buffer_constants
 
-# Group paths
-group_path -name IN2REG -from \
-  [remove_from_collection [all_inputs] [get_ports clk]]
-group_path -name REG2OUT -to [all_outputs]
-group_path -name IN2OUT -from \
-  [remove_from_collection [all_inputs] [get_ports clk]] -to [all_outputs]
-# The rest, REG2REG paths are grouped by default to clk group
+# Group paths into four categories: IN2REG, REG2OUT, REG2REG and IN2OUT
+group_path -name IN2REG -from [remove_from_collection [all_inputs] [get_ports clk]] \
+  -to [all_registers -data_pins]
+group_path -name REG2OUT -from [all_registers -clock_pins] -to [all_outputs]
+group_path -name REG2REG -from [all_registers -clock_pins] -to [all_registers -data_pins]
+group_path -name IN2OUT -from [remove_from_collection [all_inputs] [get_ports clk]] \
+  -to [all_outputs]
 
 #---- Make necessary directories for reports ----#
 file mkdir reports
@@ -92,7 +92,7 @@ check_design -nosplit > reports/check_design.rpt
 
 #---- Design compilation and optimization ----#
 #compile_ultra -no_autoungroup -exact_map -no_boundary_optimization -top
-compile -exact_map -map_effort high -area_effort high -power_effort high
+compile -exact_map -map_effort high -area_effort high
 #optimize_registers
 optimize_netlist -area
 change_names -rules verilog -hierarchy -verbose

@@ -18,6 +18,10 @@ POST_SIM_PATH = $(WORK_PATH)/post_sim
 SYN_PATH      = $(WORK_PATH)/syn
 SOC_PATH      = $(WORK_PATH)/soc
 VCS           = vcs +v2k -full64 -Mupdate -debug_all
+VCS_POST      = $(VCS) +neg_tchk -v $(LIB_PATH)/verilog/uk65lscllmvbbl_sdf21.v
+DC_SHELL      = dc_shell-xg-t -f
+MAKE          = make --silent
+RM            = rm -rv
 
 #---- initialization ----#
 init:
@@ -34,17 +38,21 @@ init:
 	@echo SYN PATH      - $(SYN_PATH)
 	@echo SOC PATH      - $(SOC_PATH)
 	@echo VCS           - $(VCS)
+	@echo VCS POST      - $(VCS_POST)
+	@echo DC SHELL      - $(DC_SHELL)
+	@echo MAKE          - $(MAKE)
+	@echo RM            - $(RM)
 	@echo "----------------------------------------------"
 
 #---- clean up junk files ----#
 clean_syn:
-	@rm -v $(SYN_PATH)/*.log && rm -v $(SYN_PATH)/*.svf && rm -rv $(SYN_PATH)/reports
+	@$(RM) $(SYN_PATH)/*.log && $(RM) $(SYN_PATH)/*.svf && $(RM) $(SYN_PATH)/reports
 
 clean_soc:
-	@rm -v $(SOC_PATH)/encounter.* && rm -rv $(SOC_PATH)/*[rR]eport? && rm -rv $(SOC_PATH)/qrc*.log && rm -rv $(SOC_PATH)/extLog* && rm -v $(SOC_PATH)/.holdtw* && rm -v $(SOC_PATH)/*.old
+	@$(RM) $(SOC_PATH)/encounter.* && $(RM) $(SOC_PATH)/*[rR]eport? && $(RM) $(SOC_PATH)/qrc*.log && $(RM) $(SOC_PATH)/extLog* && $(RM) $(SOC_PATH)/.holdtw* && $(RM) $(SOC_PATH)/*.old
 
 clean:
-	@make --silent clean_syn ; make --silent clean_soc
+	@$(MAKE) clean_syn ; $(MAKE) clean_soc
 
 #---- behavioral verilog simulation ----#
 pre_sim: init
@@ -55,18 +63,18 @@ pre_sim: init
 #---- behavioral simulation after synthesis ----#
 syn_sim: init
 	@cd $(SYN_SIM_PATH) &&\
-	$(VCS) +neg_tchk tb_$(TOP_MODULE)_syn.v -v $(LIB_PATH)/verilog/uk65lscllmvbbl_sdf21.v -sdf typ:$(TOP_MODULE):$(TOP_MODULE).sdf &&\
+	$(VCS_POST) tb_$(TOP_MODULE)_syn.v -sdf typ:$(TOP_MODULE):$(TOP_MODULE).sdf &&\
 	./simv -gui &
 
 #---- synopsys logic synthesis ----#
 synthesis: init
 	@cd $(SYN_PATH) &&\
-	dc_shell-xg-t -f run_dc.tcl | tee -i dc.log
+	$(DC_SHELL) run_dc.tcl | tee -i dc.log
 
 #---- post simulation after encounter process ----#
 post_sim: init
 	@cd $(POST_SIM_PATH) &&\
-	$(VCS) +neg_tchk tb_$(TOP_MODULE)_encounter.v -v $(LIB_PATH)/verilog/uk65lscllmvbbl_sdf21.v -sdf max:$(TOP_MODULE):$(TOP_MODULE).sdf &&\
+	$(VCS_POST) tb_$(TOP_MODULE)_encounter.v -sdf max:$(TOP_MODULE):$(TOP_MODULE).sdf &&\
 	./simv -gui &
 
 #---- generate sp netlist ----#
