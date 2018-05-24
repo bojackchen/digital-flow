@@ -326,7 +326,7 @@ A more complete implementation flow is shown below [5]. It is not necessary to i
   - Timing libraries, containing the timing of all standard digital cells for each corner
   - Physical libraries, containing the abstract defined for every standard digital cell,
   and the technology LEF file from process foundry
-  - Captable or QRC tech file for RC extraction
+  - CapTable or QRC tech file for RC extraction
   - Output from synthesis (netlist and sdc)
   - Multi-Mode Multi-Corner (MMMC) setup for analyzing and optimizing the design over multiple
   operating conditions and process corners
@@ -360,7 +360,7 @@ encounter 1> timeDesign -prePlace
 Setting the design mode and understanding how extraction and timing analysis are used during the
 flow are important for achieving timing closure [5]. This setting affects globally throughout
 the whole flow.
-```
+```console
 encounter 1> setDesignMode -process 65 -flowEffort high
 ```
 
@@ -407,18 +407,18 @@ remapping the cells can provide better results. Use the `runN2NOpt` to perform n
 optimization.
 
 ### Floorplanning
-Floorplanning targets at producing a floor plan with reasonable area, enclosing timing and no
+Floorplanning targets at producing a floor plan with reasonable area, timing enclosure and no
 routing congestion. It is recommended that an initial, prototyping mode floorplan can be run
 for faster turnaround to get a baseline placement. This is optional, but if your design is apt
-to have placement or routability problems, it is recommended that a prototyping floorplan and
+to having placement or routability problems, it is recommended that a prototyping floorplan and
 placement be run in prior.
 ```console
 encounter 1> setPlaceMode -fp true
 ```
 
 When you are certain that your design can be properly placed and routed, run the command to
-specify floorplan, where "1" is the aspect ratio, "0.6" is the core ultilization and "8" is
-the space reserved for power rings at the top, bottom, left and right. Apply proper values
+specify floorplan, where "1" is the aspect ratio, "0.6" is the core utilization and "8 8 8 8"
+is the space reserved for power rings at the top, bottom, left and right. Apply proper values
 for your own design.
 ```console
 encounter 1> floorPlan -site CORE -r 1 0.6 8 8 8 8
@@ -427,7 +427,7 @@ encounter 1> floorPlan -site CORE -r 1 0.6 8 8 8 8
 ### Powerplanning
 #### Global net connection
 After the floorplan, the spaces for power rings as well as the power and ground rails of the
-standard digital cells are in place. It is possible now to execute power plan. Global net
+standard digital cells are in place. It is possible now to complete the power plan. Global net
 connections should be properly defined using the `globalNetConnect` command, or using the GUI
 through `Power -> Connect Global Nets`. Totally there are 4 sets of entries required.
 
@@ -440,7 +440,7 @@ through `Power -> Connect Global Nets`. Totally there are 4 sets of entries requ
 | Apply All         | selected | selected | selected | selected |
 | To Global Net     | VDD      | VSS      | VDD      | VSS      |
 
-```
+```console
 encounter 1> globalNetConnect VDD -type pgpin -pin VDD -inst *
 encounter 1> globalNetConnect VSS -type pgpin -pin VSS -inst *
 encounter 1> globalNetConnect VDD -type tiehi -inst *
@@ -457,16 +457,94 @@ Another optional power plan is the power stripe running vertically. If you need 
 `Power -> Power Planning -> Add Stripe`.
 
 #### Power routing
-The `sroute` command is ultilized to route the power/ground structures. Access through
+The `sroute` command is utilized to route the power/ground structures. Access through
 `Route -> Special Route` to route the block pins, pad pins, pad rings, floating stripes, etc.
 After that you would at lease have horizontal ME1 to connect all the VDD pins and VSS pins for
 the standard digital cells.
 
 ### Placement
+As the routability of the floorplan and powerplan stabilizes, you could place the standard digital
+cells now. The command `placeDesign` by default is timing-driven (`setPlaceMode -timingDriven true`)
+and pre-placement optimization is also enabled (`deleteBufferTree`, `deleteClockTree`).
+```console
+encounter 1> placeDesign
+```
+
+By default, placement will identify clock gates and place them in a good position for the rest of
+the flow (`setPlaceMode -clkGateAware true`). The congestion repairing effort is auto-adaptive based
+on the routing congestion (`setPlaceMode -congEffort auto`). And if the `flowEffort` is set to high,
+then depending on the design, `placeDesign` may enable adaptive placement for better congestion
+and timing closure.
+
+The placement will finish along with a trial routing to indicate routability. It is important to
+review the congestions and the trial route overflow issues in the log file. If congestion happens,
+run `setPlaceMode -congEffort high` to enable the `congRepair` command, increase the numerical
+iterations and make the instance bloating more aggressive. Standalone command `congRepair` can be
+called in any part of the Pre-Route flow to relieve congestion.
 
 ### Pre-CTS
+Pre-CTS optimization is run after placement to fix timing based on ideal clocks including
+- Setup slack (WNS - worst negative slack)
+- Design rule violation (DRV)
+- Setup times (TNS - total negative slack)
+
+The `optDesign` command will control timing convergence by updating the design state, placement
+and routing, incrementally.
+
+There are several optional guidelines before starting optimization
+- Review `checkDesign -all` results
+- Check that timing is met in zero wireload using `timeDesign -prePlace`
+- Check the don't use report `reportDontUseCells`
+
+Run pre-CTS optimization through
+```console
+encounter 1> optDesign -preCTS
+```
+
+When `optDesign` completes, you will see a summary of the timing results. Additionally, you can
+also use the command `timeDesign -preCTS` to check the current timing.
+```console
+timeDesign -preCTS
+```
+
+Again, if timing violations exist, use Global Timing Debug (GTD) to analyze the problem. You can
+also focus timing optimization on specific paths using path groups. By default `optDesign` will
+temporarily generate 2 high effort `path_groups` (reg2reg and reg2clkgate). The flow to create
+and optimize path groups is as follows:
+```console
+encounter 1> group_path -name path_group_name -from from_list -to to_list
+encounter 1> setPathGroupOptions ...
+encounter 1> optDesign -preCTS -incr
+```
 
 ### CTS
+The traditional goal of CTS is to buffer clock nets and balance clock path delays. From EDI 14.2
+onwards, the default engine for performing this is CCOpt-CTS. The key steps and commands for a
+typical setup are as follows.
+1. Load post-CTS timing constraints
+2. Configure non-default routing rules (NDRs) and route types using `create_route_type` and
+`set_ccopt_property route_type` commands
+3. Set a target maximum transition time and a target skew using
+`set_ccopt_property target_max_trans` and `set_ccopt_property target_skew` commands
+4. Configure which library cells CTS should use, using
+`set_ccopt_property buffer_cells, inverter_cells, clock_gating_cells` and
+`use_inverters` properties
+5. Create a clock tree
+
+To run CCOpt-CTS with the following command. CCOpt-CTS will automatically route clock nets using
+NanoRoute, switch timing clocks to propagated mode and update source latencies to maintain
+correct I/O and inter-clock timing.
+```console
+encounter 1> ccopt_design -cts
+```
+
+To report results after CTS, use the `timeDesign -postCTS` command. Reports on clock trees and
+skew groups can be obtained using the following commands. Besides, the CCOpt Clock Tree Debugger
+(CTD) permit interactive visualization of debugging of clock trees.
+```console
+report_ccopt_clock_trees -filename clock_trees.rpt
+report_ccopt_skew_groups -filename skew_groups.rpt
+```
 
 ### Post-CTS
 
@@ -489,4 +567,4 @@ Media, 2012.
 
 [4] 虞希清. 专用集成电路设计实用教程. 浙江大学出版社, 2007.
 
-[5] Cadence&reg;. EDI System User Guide. Cadence Design Systems Inc., 2015.
+[5] Cadence Design Systems Inc. EDI System User Guide. Cadence Design Systems Inc., 2015.
