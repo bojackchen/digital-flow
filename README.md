@@ -308,8 +308,9 @@ steps as listed below [1], [3].
 - Pre-CTS
 - Clock Tree Synthesis (CTS)
 - Post-CTS
-- Detail Routing
+- Detailed Routing
 - Post-Route
+- Layout Finishing
 - Physical Verification
 - Timing Signoff
 
@@ -371,8 +372,8 @@ the effort level for every super command such as `placeDesign`, `optDesign` and 
 
 #### Extraction
 Resistance and Capacitance (RC) extraction using the `extractRC` command is run frequently in the
-flow. Set the extraction engine and effort level similarly. The first command is used before detail
-routing while the second command should be run when detail routing is finished.
+flow. Set the extraction engine and effort level similarly. The first command is used before
+detailed routing while the second command should be run when detailed routing is finished.
 ```console
 encounter 1> setExtractRCMode -engine preRoute
 encounter 1> setExtractRCMode -engine postRoute -effortLevel medium
@@ -464,9 +465,33 @@ After that you would at lease have horizontal ME1 to connect all the VDD pins an
 the standard digital cells.
 
 ### Placement
-As the routability of the floorplan and powerplan stabilizes, you could place the standard digital
-cells now. The command `placeDesign` by default is timing-driven (`setPlaceMode -timingDriven true`)
-and pre-placement optimization is also enabled (`deleteBufferTree`, `deleteClockTree`).
+As the routability of the floorplan and powerplan stabilizes, you could place the standard
+digital cells now.
+
+#### WellTap
+If the standard digital cells under usage is tap-less, then you need to place welltap cells
+manually prior to the placement of the standard cells. Access through
+`Place -> Physical Cells -> Add Well Tap`. Specify the welltap cell name and distance to finish
+the placement of welltap.
+
+#### IO pins
+If you want to specify the locations of the IO pins, you need to load the ioc file now.
+```console
+encounter 1> loadIoFile IOFile.ioc
+```
+
+The ioc file syntax is simple. Below is an example of specifying the IO pin location.
+```
+Offset: 10
+Pin: example_pin[1] W 3 0.400 0.400
+Skip: 2
+Pin: example_pin[0] W 3 0.400 0.400
+Skip: 2
+```
+
+#### Standard cells
+The command `placeDesign` by default is timing-driven (`setPlaceMode -timingDriven true`) and
+pre-placement optimization is also enabled (`deleteBufferTree`, `deleteClockTree`).
 ```console
 encounter 1> placeDesign
 ```
@@ -490,9 +515,7 @@ Pre-CTS optimization is run after placement to fix timing based on ideal clocks 
 - Setup times (TNS - total negative slack)
 
 The `optDesign` command will control timing convergence by updating the design state, placement
-and routing, incrementally.
-
-There are several optional guidelines before starting optimization
+and routing, incrementally. There are several optional guidelines before starting optimization
 - Review `checkDesign -all` results
 - Check that timing is met in zero wireload using `timeDesign -prePlace`
 - Check the don't use report `reportDontUseCells`
@@ -530,7 +553,7 @@ typical setup are as follows.
 4. Configure which library cells CTS should use, using
 `set_ccopt_property buffer_cells, inverter_cells, clock_gating_cells` and
 `use_inverters` properties
-5. Create a clock tree
+5. Create a clock tree spec using `create_ccopt_clock_tree_spec`
 
 To run CCOpt-CTS with the following command. CCOpt-CTS will automatically route clock nets using
 NanoRoute, switch timing clocks to propagated mode and update source latencies to maintain
@@ -548,16 +571,142 @@ report_ccopt_skew_groups -filename skew_groups.rpt
 ```
 
 ### Post-CTS
+Post-CTS optimization is run after CTS to
+- Fix remaining design rule violations (DRVs)
+- Optimize remaining setup violations
+- Correct timing using propagated clock
+- Optimize hold violations
 
-### Detail Routing
+#### SDC update
+Since after CTS the clock network is fully inserted and routed, it is recommended to adjust the
+timing constraints accordingly.
+- Set the clock to `propagated` using `set_propagated_clock [all_clocks]`
+- Update `set_clock_uncertainty` command to model only jitter since skew can now be calculated
+- Remove any `set_clock_transition` command since it is also calculated now
+- Update `set_clock_latency` to mode only source latency because insertion delay is calculated
+- Update derating and RC scaling factors if necessary
+
+#### Setup optimization
+Typically the same set of options from pre-CTS optimization apply to post-CTS optimization as
+well. Run post-CTS setup optimization by
+```console
+encounter 1> optDesign -postCTS
+```
+
+The setup timing results will be printed out after optimization. It should be close to the case
+in pre-CTS but a little worse since insertion delay and clock skew are included. If a jump in
+setup slack happens, try to figure out the reason.
+
+#### Hold optimization
+Starting from post-CTS, timing optimization to fix hold violations can be performed. Run by
+```console
+encounter 1> optDesign -postCTS -hold
+```
+
+Hold optimization will insert cells and perform resizing to fix hold violations while minimizing
+the effect on setup timing. Several suggestions to achieve hold timing closure would be
+- Make sure that the hold timing uncertainty is realistic
+- Allow delay cells to be used
+- Make sure there is enough room for inserted delay cells and buffers
+- Make sure that the timing constraints are in sync for setup and hold
+- Control hold optimization target slack such as `setOptMode -holdTargetSlack -0.1`
+
+The hold timing results will also be printed out after optimization. It is not necessary to fix
+all hold violations now. Another hold timing optimization could be performed at post-Route step.
+
+### Detailed Routing
+After post-CTS optimization, there should be few timing violations left to start detailed routing.
+Detailed routing targets at
+- Routing the design without DRC or LVS error
+- Routing the design without degrading timing or signal integrity
+- Using DFM techniques such as multi-cut via insertion, wire widening and wire spacing to
+optimize yield
+
+#### Route design
+The detailed routing uses NanoRoute engine which performs timing and SI driven routing
+concurrently. NanoRoute routes the signals that are critical for signal integrity properly to
+minimize cross-coupling between these nets. Additional effort is also devoted to the improvement
+of timing, SI and yield.
+
+There are a few possible options to check and setup before running detailed routing.
+- Make sure all vias are properly defined in the process technology LEF file
+- Make sure that top routing layer is properly set
+- If needed, specify NonDefaultRules (NDRs) and shield routing
+- Post-Route wire spreading is enabled by default when `flowEffort` is set to `high`
+- Achieve the highest possible double-cut coverage to reduce via resistance
+  - `setNanoRouteMode -routeConcurrentMinimizeViaCountEffort medium`
+  - `setNanoRouteMode -drouteUseMultiCutViaEffort medium | high`
+
+Use command `routeDesign` to perform detailed routing. This command automatically sets timing and
+SI driven routing mode.
+```console
+encounter 1> routeDesign
+```
+
+#### Post-Route extraction
+It is important to set RC extraction mode after all nets are routed.
+```console
+encounter 1> setExtractRCMode -engine postRoute -effortLevel medium
+```
+
+- `low` invokes the native detailed extraction engine.
+- `medium` invokes the Turbo-QRC (TQRC) extraction engine. This is the default engine for process
+node 65 nm and below whenever Quantus tech files are present.
+- `high` invokes the Integrated QRC (IQRC) extraction engine. IQRC requires a Quantus QRC license.
+- `signoff` invokes the Standalone Quantus QRC extraction engine, which also requires a Quantus
+QRC license.
 
 ### Post-Route
+Before detailed routing there could be few timing violations left unfixed, and after detailed
+routing more violations could come up due to parasitics or others. Post-Route optimization is
+performed to fix these violations. One of the strengths of post-Route optimization is the ability
+to simultaneously cut a wire and insert buffers, create the new RC graph at the corresponding
+point, and modify the graph to estimate the new parasitics for the cut wire without redoing
+extraction.
+
+#### SI preparation
+Post-Route optimization includes signal integrity optimization. SI optimization requires the
+following preparation.
+- Make sure ECSM/CCS noise models or CDB libraries are provided for each cell for each corner.
+- You must be in OCV mode and remove clock pessimism through
+`setAnalysisMode -analysisType onChipVariation -cppr both`.
+- Enable SI CPPR through `set_global timing_enable_si_cppr true`.
+- Fix transition time violations.
+
+#### Command sequence
+The command sequence of post-Route optimization is the same as post-CTS optimization, with
+setup timing optimization first and hold timing optimization later.
+```
+encounter 1> optDesign -postRoute
+encounter 1> optDesign -postRoute -hold
+```
+
+### Layout finishing
+After post-Route optimization the layout is finishing. In this step you may want to add fillers
+and metal fill shapes to meet the DRC rules. The fillers are to fill the gaps between the standard
+digital cells in the standard cell rows. Small, floating dummy metals are also inserted to make
+the metal density more uniform. The commands used here are `addFiller`, `setMetalFill` and
+`addMetalFill`.
 
 ### Physical verification
+A complete layout is now generated. DRC, LVS and metal density could be run for verification.
+Commands used here are `verifyGeometry`, `verifyConnectivity` and `verifyMetalFill`. It is still
+recommended to run DRC and LVS in Cadence when you are combining the digital layout with other
+blocks.
 
 ### Timing Signoff
+The goal of signoff is to verify that the design indeed meets the specified timing constraints.
+This is accomplished by first using Quantus to generate detailed extraction data and using this
+data to perform a final timing analysis based on Tempus timing analyzer. A Tempus license is
+required to run the timing signoff commands to generate timing reports.
+```console
+encounter 1> timeDesign -signoff
+encounter 1> timeDesign -signoff -hold
+```
 
 ### Output
+Congratulation! By now you should have your layout ready to be saved. There are several products
+that are important to be exported from the current layout.
 
 ## Reference
 [1] Bhatnagar, Himanshu. Advanced ASIC Chip Synthesis: Using Synopsys&reg; Design Compiler&trade;
