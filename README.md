@@ -216,7 +216,7 @@ Some typical constraints that are commonly applied would be [1], [4]
 - create\_clk
 - create\_generated\_clock
 - set\_dont\_touch
-- set\_clock}\_latency
+- set\_clock\_latency
 - set\_clock\_uncertainty
 - set\_propagated\_clock
 - set\_input\_delay
@@ -310,6 +310,7 @@ steps as listed below [1], [3].
 - Post-CTS
 - Detail Routing
 - Post-Route
+- Physical Verification
 - Timing Signoff
 
 While **static timing analysis (STA)** is executed across the whole flow to ensure timing
@@ -551,6 +552,8 @@ report_ccopt_skew_groups -filename skew_groups.rpt
 ### Detail Routing
 
 ### Post-Route
+
+### Physical verification
 
 ### Timing Signoff
 
