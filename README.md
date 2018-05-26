@@ -9,21 +9,21 @@ Instead this digital design flow works for mixed-signal design where the digital
 to be integrated with the analog part. So the ultimate production of this flow would be a compact
 digital layout with specified ports to be integrated with other analog layout.
 
-## Standard digital design flow
+## Standard Digital Design Flow
 A standard digital design flow consists of
-1. RTL HDL design
-2. Behavior simulation (platform: Synopsys&reg; VCS)
-3. Logic synthesis (platform: Synopsys&reg; Design Compiler)
-4. Post-synthesis simulation (platform: Synopsys&reg; VCS)
-5. Place & route (platform: Cadence&reg; Encounter Digital Implementation)
-6. Post-layout simulation (platform: Synopsys&reg; VCS)
+1. RTL HDL Design
+2. Behavior Simulation (platform: Synopsys&reg; VCS)
+3. Logic Synthesis (platform: Synopsys&reg; Design Compiler)
+4. Post-synthesis Simulation (platform: Synopsys&reg; VCS)
+5. Place & Route (platform: Cadence&reg; Encounter Digital Implementation)
+6. Post-layout Simulation (platform: Synopsys&reg; VCS)
 7. Integration with analog part (platform: Cadence&reg;)
 
 Note that the above steps are iterative. For example, after logic synthesis, it is possible
 that the design no longer meets the design specification, thus you need to fall back to
 step 3 or even step 2 and 1 to find the reason and fix the problem.
 
-## SKELETON working directory
+## The `SKELETON` Working Directory
 The provided directory named `SKELETON` is a sample working directory for your digital design
 flow. Within this directory all the steps mentioned in previous section will be performed, 6
 directories are set for 6 steps respectively. The structure of `SKELETON` working directory is
@@ -59,7 +59,7 @@ If you are not [IPEL](http://www.ece.ust.hk/~ipel) members or are not using the 
 as in this tutorial, it should still be adequate enough for you to establish everything
 accordingly.
 
-### Linux command line environment
+### Linux Command Line Environment
 First of all, it is very important for users to get used to the Linux development
 environment, especially the Linux command line. A lot of the operations in the design flow
 are done with Linux command line and sometimes only possible to be done with command line.
@@ -72,7 +72,7 @@ IPEL Linux servers. Furthermore, umc065 process is used as example, so if you ar
 other process, you are on your own to find out all the corresponding resources vital for
 digital design flow.
 
-### Tool chain setup
+### Tool Chain Setup
 As mentioned above, we have to use different sets of tool chains to complete each step. For
 [ipel](http://www.ece.ust.hk/~ipel) members, all the required tools are available on the Linux
 server.
@@ -91,7 +91,7 @@ source /usr/eelocal/cadence/edi142/.cshrc               # Cadence  EDI
 Currently (May 2018) all these tools are up-to-date. Update the tools if newer versions are
 available.
 
-### Digital standard cell library
+### Digital Standard Cell Library
 The digital standard cell library should be prepared in prior. A Cadence library containing all
 the standard digital cells (like AND, XOR, DFF, etc.) is a must, in which abstract view, layout
 view, symbol view and schematic view are ready for later usage (some special cells may have some
@@ -100,7 +100,7 @@ make such a library. For umc065 process, the deliverable content would be
 
 | Directory name/path | Description                                                                  |
 | ------------------- | ---------------------------------------------------------------------------- |
-| doc                 | A directory containing the files of databook.pdf, cell list etc              |
+| doc                 | A directory containing the files of databook.pdf, cell list, etc.            |
 | cir                 | A directory containing the netlist file after RC extraction                  |
 | lvs\_netlist        | A directory containing the netlist file for LVS                              |
 | gds                 | A directory containing the GDSII file                                        |
@@ -113,7 +113,7 @@ make such a library. For umc065 process, the deliverable content would be
 | lef                 | A directory containing lef macro files and technology files                  |
 | milkyway            | A directory containing ICC technology files and database                     |
 
-## Step 1: RTL HDL design
+## Step 1: RTL HDL Design
 The very first step of the digital design flow is to prepare your verilog HDL design based on
 the desired functional specification. A skeleton verilog file `SKELETON.v` is already provided
 under `SKELETON/verilog` along with 3 testbench files, one for behavior simulation, one for
@@ -134,7 +134,7 @@ could possibly help you avoid this [1], [2].
 - Always include a complete sensitivity list in each `always` block
 - Do not assign to `reg` type signal in multiple `always` blocks
 
-In addition to the above, the following are general guidelines that every designer shoud be aware
+In addition to the above, the following are general guidelines that every designer should be aware
 of. There is no fixed rule adhere to these guidelines, however, following them vastly improves
 the performance of the synthesized logic, and may produce a cleaner design that is well suited
 for automating the synthesis process [1].
@@ -145,7 +145,7 @@ be synthesized once and not touched again
 - Do not create unnecessary hierarchy
 - Register all outputs whenever practical
 
-## Step 2: Behavior simulation
+## Step 2: Behavior Simulation
 ### Prerequisite
 - Tool: Synopsys&reg; VCS
 - Input: Verilog HDL design and corresponding testbench
@@ -173,10 +173,10 @@ according to the error message.
 Desired functionality and synthesizable verilog HDL design are the requirements for you to proceed
 to the next step.
 
-## Step 3: Logic synthesis
+## Step 3: Logic Synthesis
 Synthesis is the all encompassing, generic term for the process of achieving an optimal gate-level
 netlist from HDL code [3]. Logic synthesis transforms your idea to physically implementable design.
-Genrally logic synthesis consists of 3 steps [4].
+Generally logic synthesis consists of 3 steps [4].
 - Translation
 - Logic optimization
 - Mapping
@@ -205,7 +205,7 @@ technology-specific gate-level netlist is derived.
 
 The working directory is the same directory as `Makefile`.
 
-### Design constraints
+### Design Constraints
 During synthesis, design constraints must be applied to constrain the Design Compiler. There are
 infinite numbers of designs to realize the desired function, but with design constraints there are
 only limited solutions, and Design Compiler will try to find you one that meets the constraints
@@ -260,7 +260,7 @@ and also estimated delay for interconnections.
 the original verilog HDL design. All the digital gates are from your specified synthesis library,
 meaning that it is indeed physically implementable.
 
-## Step 4: Post-synthesis simulation
+## Step 4: Post-Synthesis Simulation
 ### Prerequisite
 - Tool: Synopsys&reg; VCS
 - Input: behavior model of the standard digital cell library, gate-level netlist from last step,
@@ -295,7 +295,7 @@ files and produced executive are stored in `SKELETON/syn_sim`. The waveform afte
 would present you signal latency as well as possible glitches. Make sure that **functionality**
 is still achieved, otherwise you may need to go back and find the reason.
 
-## Step 5: Place & route
+## Step 5: Place & Route
 With a clean and optimized netlist, it is ready to transfer the design to its physical form,
 using the layout tool. The place & route process is complicated and can be condensed to several
 steps as listed below [1], [3].
@@ -321,7 +321,7 @@ A more complete implementation flow is shown below [5]. It is not necessary to i
 
 ![Complete EDI timing closure flow](encounter_flow.jpg "Complete EDI timing closure flow")
 
-### Data preparation & validation
+### Data Preparation & Validation
 #### Preparation
 - Tool: Cadence&reg; EDI
 - Input
@@ -345,7 +345,7 @@ encounter 1> init_design
 Encounter will load the design and check the run environment for any missing setup or the design
 for any problems and highlight them.
 
-#### Optional check
+#### Optional Check
 You could proceed to the next step now, but alternatively there are several things you can check.
 Run `checkDesign -all` command to check for missing or inconsistent library and design data, and
 run `check_timing -verbose` to report timing problems that the Common Timing Engine (CTE) sees.
@@ -357,8 +357,8 @@ encounter 1> checkDesign -all
 encounter 1> timeDesign -prePlace
 ```
 
-### Flow preparation
-#### Design mode
+### Flow Preparation
+#### Design Mode
 Setting the design mode and understanding how extraction and timing analysis are used during the
 flow are important for achieving timing closure [5]. This setting affects globally throughout
 the whole flow.
@@ -370,7 +370,7 @@ As indicated above, `-process` option sets the process technology you are using 
 the process technology dependent default settings globally. The `-flowEffort` options specifies
 the effort level for every super command such as `placeDesign`, `optDesign` and `routeDesign`.
 
-#### Extraction
+#### RC Extraction
 Resistance and Capacitance (RC) extraction using the `extractRC` command is run frequently in the
 flow. Set the extraction engine and effort level similarly. The first command is used before
 detailed routing while the second command should be run when detailed routing is finished.
@@ -379,7 +379,7 @@ encounter 1> setExtractRCMode -engine preRoute
 encounter 1> setExtractRCMode -engine postRoute -effortLevel medium
 ```
 
-The `-effortLevel` option controls which extractor is used when postRoute engine is used.
+The `-effortLevel` option controls which extractor is used when `postRoute` engine is used.
 - `low` invokes the native detailed extraction engine. This is the default setting.
 - `medium` invokes the Turbo QRC (TQRC) extraction engine. TQRC is the default engine for process
 nodes of 65 nm and below whenever Quantus techfiles are available.
@@ -387,7 +387,7 @@ nodes of 65 nm and below whenever Quantus techfiles are available.
 - `signoff` invokes the Standalone Quantus QRC extraction engine. It provided the highest accuracy,
 and obviously requires a Quantus QRC license.
 
-#### Timing analysis
+#### Timing Analysis
 Timing analysis is typically run after each step in the timing closure flow using the `timeDesign`
 command. If timing violation occurs, Global Timing Debug (GTD) GUI is recommended to analyze and
 debug the results. The initial timing analysis should be performed after pre-CTS optimization.
@@ -427,7 +427,7 @@ encounter 1> floorPlan -site CORE -r 1 0.6 8 8 8 8
 ```
 
 ### Powerplanning
-#### Global net connection
+#### Global Net Connection
 After the floorplan, the spaces for power rings as well as the power and ground rails of the
 standard digital cells are in place. It is possible now to complete the power plan. Global net
 connections should be properly defined using the `globalNetConnect` command, or using the GUI
@@ -449,7 +449,7 @@ encounter 1> globalNetConnect VDD -type tiehi -inst *
 encounter 1> globalNetConnect VSS -type tielo -inst *
 ```
 
-#### Power ring
+#### Power Ring
 The reserved power ring width is specified in floor plan and now it is time to add the power ring
 surrounding the core area. Access through `Power -> Power Planning -> Add Ring` and specify the
 parameters needed to finish the power ring setup. By default a VDD ring and a VSS ring are created
@@ -458,7 +458,7 @@ around the core area with VDD ring inside.
 Another optional power plan is the power stripe running vertically. If you need it, access through
 `Power -> Power Planning -> Add Stripe`.
 
-#### Power routing
+#### Power Routing
 The `sroute` command is utilized to route the power/ground structures. Access through
 `Route -> Special Route` to route the block pins, pad pins, pad rings, floating stripes, etc.
 After that you would at lease have horizontal ME1 to connect all the VDD pins and VSS pins for
@@ -468,13 +468,13 @@ the standard digital cells.
 As the routability of the floorplan and powerplan stabilizes, you could place the standard
 digital cells now.
 
-#### WellTap
+#### Welltap
 If the standard digital cells under usage is tap-less, then you need to place welltap cells
 manually prior to the placement of the standard cells. Access through
 `Place -> Physical Cells -> Add Well Tap`. Specify the welltap cell name and distance to finish
 the placement of welltap.
 
-#### IO pins
+#### IO Pins
 If you want to specify the locations of the IO pins, you need to load the ioc file now.
 ```console
 encounter 1> loadIoFile IOFile.ioc
@@ -489,7 +489,7 @@ Pin: example_pin[0] W 3 0.400 0.400
 Skip: 2
 ```
 
-#### Standard cells
+#### Standard Cells
 The command `placeDesign` by default is timing-driven (`setPlaceMode -timingDriven true`) and
 pre-placement optimization is also enabled (`deleteBufferTree`, `deleteClockTree`).
 ```console
@@ -566,8 +566,8 @@ To report results after CTS, use the `timeDesign -postCTS` command. Reports on c
 skew groups can be obtained using the following commands. Besides, the CCOpt Clock Tree Debugger
 (CTD) permit interactive visualization of debugging of clock trees.
 ```console
-report_ccopt_clock_trees -filename clock_trees.rpt
-report_ccopt_skew_groups -filename skew_groups.rpt
+encounter 1> report_ccopt_clock_trees -filename clock_trees.rpt
+encounter 1> report_ccopt_skew_groups -filename skew_groups.rpt
 ```
 
 ### Post-CTS
@@ -577,7 +577,7 @@ Post-CTS optimization is run after CTS to
 - Correct timing using propagated clock
 - Optimize hold violations
 
-#### SDC update
+#### SDC Update
 Since after CTS the clock network is fully inserted and routed, it is recommended to adjust the
 timing constraints accordingly.
 - Set the clock to `propagated` using `set_propagated_clock [all_clocks]`
@@ -586,7 +586,7 @@ timing constraints accordingly.
 - Update `set_clock_latency` to mode only source latency because insertion delay is calculated
 - Update derating and RC scaling factors if necessary
 
-#### Setup optimization
+#### Setup Optimization
 Typically the same set of options from pre-CTS optimization apply to post-CTS optimization as
 well. Run post-CTS setup optimization by
 ```console
@@ -597,7 +597,7 @@ The setup timing results will be printed out after optimization. It should be cl
 in pre-CTS but a little worse since insertion delay and clock skew are included. If a jump in
 setup slack happens, try to figure out the reason.
 
-#### Hold optimization
+#### Hold Optimization
 Starting from post-CTS, timing optimization to fix hold violations can be performed. Run by
 ```console
 encounter 1> optDesign -postCTS -hold
@@ -622,7 +622,7 @@ Detailed routing targets at
 - Using DFM techniques such as multi-cut via insertion, wire widening and wire spacing to
 optimize yield
 
-#### Route design
+#### Route Design
 The detailed routing uses NanoRoute engine which performs timing and SI driven routing
 concurrently. NanoRoute routes the signals that are critical for signal integrity properly to
 minimize cross-coupling between these nets. Additional effort is also devoted to the improvement
@@ -643,10 +643,10 @@ SI driven routing mode.
 encounter 1> routeDesign
 ```
 
-#### Post-Route extraction
+#### Post-Route Extraction
 It is important to set RC extraction mode after all nets are routed.
 ```console
-encounter 1> setExtractRCMode -engine postRoute -effortLevel medium
+encounter 1> setExtractRCMode -engine postRoute -effortLevel high
 ```
 
 - `low` invokes the native detailed extraction engine.
@@ -664,31 +664,32 @@ to simultaneously cut a wire and insert buffers, create the new RC graph at the 
 point, and modify the graph to estimate the new parasitics for the cut wire without redoing
 extraction.
 
-#### SI preparation
+#### SI Preparation
 Post-Route optimization includes signal integrity optimization. SI optimization requires the
 following preparation.
 - Make sure ECSM/CCS noise models or CDB libraries are provided for each cell for each corner.
-- You must be in OCV mode and remove clock pessimism through
-`setAnalysisMode -analysisType onChipVariation -cppr both`.
+- You must be in OCV mode and remove clock pessimism through `setAnalysisMode`.
 - Enable SI CPPR through `set_global timing_enable_si_cppr true`.
 - Fix transition time violations.
 
-#### Command sequence
+#### Command Sequence
 The command sequence of post-Route optimization is the same as post-CTS optimization, with
 setup timing optimization first and hold timing optimization later.
-```
+```console
+encounter 1> setAnalysisMode -analysisType onChipVariation -cppr both
+encounter 1> setDelayCalMode -SIAware true
 encounter 1> optDesign -postRoute
 encounter 1> optDesign -postRoute -hold
 ```
 
-### Layout finishing
+### Layout Finishing
 After post-Route optimization the layout is finishing. In this step you may want to add fillers
 and metal fill shapes to meet the DRC rules. The fillers are to fill the gaps between the standard
 digital cells in the standard cell rows. Small, floating dummy metals are also inserted to make
 the metal density more uniform. The commands used here are `addFiller`, `setMetalFill` and
 `addMetalFill`.
 
-### Physical verification
+### Physical Verification
 A complete layout is now generated. DRC, LVS and metal density could be run for verification.
 Commands used here are `verifyGeometry`, `verifyConnectivity` and `verifyMetalFill`. It is still
 recommended to run DRC and LVS in Cadence when you are combining the digital layout with other
@@ -707,6 +708,27 @@ encounter 1> timeDesign -signoff -hold
 ### Output
 Congratulation! By now you should have your layout ready to be saved. There are several products
 that are important to be exported from the current layout.
+- `SKELETON_encounter.v` is the final **v**erilog HDL netlist exported from EDI. This netlist is
+different from the netlist from synthesis, because the addition of buffers, inverters and other
+cells to fix timing and design rule violations. The layout should be checked against this
+schematic for LVS.
+- `SKELETON.sp` is the **s****p**ice netlist of the schematic. It is converted from the verilog
+HDL netlist above. Run the `v2lvs` executive under `SKELETON/soc` to convert the current
+`SKELETON_encounter.v` to `SKELETON.sp`. LVS check in Cadence supports comparing the layout to
+spice netlist.
+- `SKELETON.enc` is the **enc**ounter design database. It can be restored later for further
+inspection of the current design.
+- `SKELETON.sdf` is the new **s**tandard **d**elay **f**ormat file used for post-layout simulation.
+This sdf file is more accurate than the sdf file from synthesis.
+- `SKELETON.def` is the **d**esign **e**xchange **f**ormat file for layout exchange. It can be
+imported into Cadence to generate a cellview called `SKELETON` with a layout view. Further changes
+must be made to 1) replace abstract view with layout view; 2) add pin labels.
+- `SKELETON.spef` is the **s**tandard **p**arasitic **e**xchange **f**ormat. It contains the netlist
+as well as all the parasitic RCs for all nets.
+- `SKELETON.save.io` is the same IO pin location file exported from EDI, but in a slightly different
+syntax.
+
+## Post-layout Simulation
 
 ## Reference
 [1] Bhatnagar, Himanshu. Advanced ASIC Chip Synthesis: Using Synopsys&reg; Design Compiler&trade;
