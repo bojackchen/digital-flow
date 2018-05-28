@@ -17,7 +17,7 @@ A standard digital design flow consists of
 4. Post-synthesis Simulation (platform: Synopsys&reg; VCS)
 5. Place & Route (platform: Cadence&reg; Encounter Digital Implementation)
 6. Post-layout Simulation (platform: Synopsys&reg; VCS)
-7. Integration with analog part (platform: Cadence&reg;)
+7. Integration with Analog Part (platform: Cadence&reg;)
 
 Note that the above steps are iterative. For example, after logic synthesis, it is possible
 that the design no longer meets the design specification, thus you need to fall back to
@@ -697,7 +697,7 @@ QRC license.
 #### Timing Check
 Use the following command to do a post-Route timing check on non-SI timing. Remember to reset
 `-SIAware` option back to `true` to enable SI optimization in the next step.
-```
+```console
 encounter 1> setDelayCalMode -SIAware false
 encounter 1> timeDesign -postRoute
 encounter 1> timeDesign -postRoute -hold
@@ -721,8 +721,8 @@ Post-Route optimization includes signal integrity optimization. SI optimization 
 following preparation.
 - Make sure ECSM/CCS noise models or CDB libraries are provided for each cell for each delay
 corner.
-- You must be in On Chip Variation (OCV) mode and remove clock pessimism through
-`setAnalysisMode` (detailed command shown below).
+- You must be in On Chip Variation (OCV) mode and remove clock pessimism through the
+`setAnalysisMode` command (detailed command shown below).
 - Enable SI CPPR through `set_global timing_enable_si_cppr true`.
 - Watch for routing congestions, especially after detailed routing.
 - Fix transition time violations.
@@ -745,10 +745,19 @@ make the metal density more uniform. The commands used here are `addFiller`, `se
 `addMetalFill`, and a more convenient way is to access them through GUI menus.
 
 ### Physical Verification
-A complete layout is now generated. DRC, LVS and metal density could be run for verification.
-Commands used here are `verifyGeometry`, `verifyConnectivity` and `verifyMetalFill`. It is more
-convenient to run the commands through GUI menus. It is still recommended to run DRC and LVS in
-Cadence when you have imported the layout.
+A complete layout is now generated. DRC and LVS could be run for verification. Commands used here
+are `verifyGeometry`, `verifyConnectivity` and `verifyMetalFill`. It is more convenient to run the
+commands through GUI menus. It is still recommended to run DRC and LVS in Cadence when you have
+imported the layout.
+
+Running LVS requires comparing the layout to the schematic. There are several things to do before
+running a successful LVS check.
+- After importing the DEF ouput into Cadence, a layout view is created with abstract view of all
+the instances and no labels are created for pins. You must replace the abstract view with layout
+view and create pin labels.
+- The schematic could be either a spice netlist (created by `v2lvs` executive) or a Cadence
+schematic by importing the verilog and do some necessary changes. Detailed explanation is presented
+below.
 
 ### Timing Signoff
 The goal of signoff is to verify that the design indeed meets the specified timing constraints.
@@ -786,7 +795,39 @@ as well as all the parasitic RCs for all nets.
 - `SKELETON.save.io` is the same **IO** pin location file exported from EDI, but in a slightly
 different syntax.
 
-## Post-layout Simulation
+## Post-Layout Simulation
+### Prerequisite
+- Tool: Synopsys&reg; VCS
+- Input: behavior model of the standard digital cell library, gate-level netlist from last step,
+corresponding testbench and sdf file
+  - Behavior model of the standard digital cell library is just the same as the case in
+  post-synthesis simulation. During compilation it will be included.
+  - `SKELETON/post_sim/SKELETON_encounter.v` is a symbolic link to the gate-level netlist from
+  encounter output. Note that this netlist is different from synthesis output.
+  - `SKELETON/post_sim/tb_SKELETON_encounter.v` is another symbolic link to the testbench for
+  post-layout simulation under `SKELETON/verilog/tb_SKELETON_encounter.v`.
+  - `SKELETON/post_sim/SKELETON.sdf` is a symbolic link to the encounter-exported sdf file
+  `SKELETON/soc/SKELETON.sdf`.
+
+The working directory is the same directory as `Makefile`.
+
+### Execution
+The outputs from encounter, specifically the gate-level netlist and the new sdf file should be
+readily prepared for post-layout simulation. The previous invalid symbolic links, namely
+`SKELETON/post_sim/SKELETON_encounter.v` and `SKELETON/post_sim/SKELETON.sdf` are now **valid**.
+
+The compilation process is the same as that in post-synthesis simulation. The behavior model of
+standard digital cell library will be included and the sdf file will be back-annotated to introduce
+cell and interconnect delays.
+```consile
+[SKELETON]$ make post_sim
+```
+
+Check the compilation log for any syntax and also **sdf annotation error**. All the intermediate
+files and procuded executive are placed under `SKELETON/post_sim` and the DVE GUI will pop up
+upon successful compilation. The simulation result should be worse than that in post-synthesis
+simulation, but make sure **functionality** is still achieved and setup and hold timing checks
+are all met. Further iterations are needed if the circuit fails to work properly.
 
 ## Reference
 [1] Bhatnagar, Himanshu. Advanced ASIC Chip Synthesis: Using Synopsys&reg; Design Compiler&trade;
