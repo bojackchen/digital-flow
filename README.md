@@ -511,9 +511,12 @@ digital cells and other physical cells now.
 
 #### Welltap
 If the standard digital cells under usage is tap-less, then you need to place physical welltap
-cells manually prior to the placement of the standard cells. Access through
+cells manually prior to the placement of the standard cells. Access through GUI menu
 `Place -> Physical Cells -> Add Well Tap`. Specify the welltap cell name and the distance to
-finish the placement of welltap.
+finish the placement of welltap. Equivalently you can also run the command below.
+```console
+encounter 1> addWellTap -cell WT3W -cellInterval 10 -prefix WELLTAP
+```
 
 #### Standard Cells
 The command `placeDesign` by default is timing-driven (`setPlaceMode -timingDriven true`) and
@@ -584,10 +587,24 @@ typical clock tree synthesis setup are as follows [5].
 `buffer_cells`, `inverter_cells`, `clock_gating_cells` and `use_inverters` properties.
 5. Create a clock tree spec using `create_ccopt_clock_tree_spec`.
 
+#### SDC Update
+The new CTS engine, CCOpt-CTS, requires loading the post-CTS timing constraints prior to CTS.
+It is recommended to adjust the timing constraints accordingly before CTS rather than the old
+convention of updating timing constraints only after CTS.
+- Update `set_clock_uncertainty` command to model only jitter since skew can now be calculated.
+- Remove any `set_clock_transition` command since transition is also calculated now.
+- Update `set_clock_latency` to mode only source latency because insertion delay is calculated.
+- Update derating and RC scaling factors if necessary. Make sure these factors are tuned properly.
+
+#### Run CTS
 Run CCOpt-CTS with the following command. CCOpt-CTS will automatically route clock nets using
 NanoRoute, switch timing clocks to propagated mode and update source latencies to maintain
 correct I/O and inter-clock timing.
 ```console
+encounter 1> update_constraint_mode -name cons_tt -sdc_files postCTS.sdc
+encounter 1> set_ccopt_property ...
+encounter 1> create_ccopt_clock_tree_spec -file ccopt.spec
+encounter 1> source ccopt.spec
 encounter 1> ccopt_design -cts
 ```
 
@@ -606,15 +623,6 @@ Post-CTS optimization is run right after CTS to
 - Optimize remaining setup violations
 - Correct timing using propagated clock
 - Optimize hold violations
-
-#### SDC Update
-Since after CTS the clock network is fully inserted and routed, it is recommended to adjust the
-timing constraints accordingly.
-- Set the clock to `propagated` using `set_propagated_clock [all_clocks]`.
-- Update `set_clock_uncertainty` command to model only jitter since skew can now be calculated.
-- Remove any `set_clock_transition` command since transition is also calculated now.
-- Update `set_clock_latency` to mode only source latency because insertion delay is calculated.
-- Update derating and RC scaling factors if necessary. Make sure these factors are tuned properly.
 
 #### Setup Optimization
 Typically the same set of options from pre-CTS optimization applies to post-CTS optimization as
@@ -680,6 +688,7 @@ detailed routing
 Use the command `routeDesign` to perform detailed routing. This command automatically enables
 timing and SI driven routing mode.
 ```console
+encounter 1> setNanoRouteMode ...
 encounter 1> routeDesign
 ```
 
