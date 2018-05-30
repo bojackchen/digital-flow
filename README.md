@@ -517,10 +517,11 @@ finish the placement of welltap.
 
 #### Standard Cells
 The command `placeDesign` by default is timing-driven (`setPlaceMode -timingDriven true`) and
-pre-placement optimization is also enabled (`deleteBufferTree`, `deleteClockTree`). Note that
-if you have run trial placement and routing, it is important to reset `-fp` option after that.
+pre-placement optimization is also enabled (`deleteBufferTree`, `deleteClockTree`). The option
+`-inPlaceOpt` would force in-place optimization to be performed. Note that if you have run trial
+placement and routing, it is important to reset `-fp` option after that.
 ```console
-encounter 1> placeDesign
+encounter 1> placeDesign -inPlaceOpt
 ```
 
 By default, placement will identify clock gates and place them in a good position for the rest of
@@ -549,10 +550,13 @@ and routing incrementally. There are several optional guidelines before starting
 - Adjust settings depending on specific scenarios: high performance, high congestion or high
 utilization, etc.
 
-Run pre-CTS optimization through the `optDesign` command. When optimization completes, you will
-see a summary of the timing results on the terminal. Additionally, you can also use the command
-`timeDesign -preCTS` to check the current timing.
+Run pre-CTS optimization through the `optDesign` command. By default this command will not fix
+max fanout violations. Use the `setOptMode` command to force it, and the command shown below
+also enables data to data checks. When optimization completes, you will see a summary of the timing
+results on the terminal. Additionally, you can also use the command `timeDesign -preCTS` to check
+the current timing.
 ```console
+encounter 1> setOptMode -fixFanoutLoad true -enableDataToDataChecks true
 encounter 1> optDesign -preCTS
 encounter 1> timeDesign -preCTS
 ```
@@ -684,7 +688,7 @@ It is important to set RC extraction mode after all nets are routed. The `engine
 of course `postRoute`, while the `effortLevel` option chooses the extraction engine used with
 different accuracy and runtime.
 ```console
-encounter 1> setExtractRCMode -engine postRoute -effortLevel high
+encounter 1> setExtractRCMode -engine postRoute -effortLevel medium
 ```
 
 - `low` invokes the native detailed extraction engine.
@@ -744,6 +748,12 @@ digital cell rows. Furthermore, if desired, small, floating dummy metals are als
 make the metal density more uniform. The commands used here are `addFiller`, `setMetalFill` and
 `addMetalFill`, and a more convenient way is to access them through GUI menus.
 
+One point worth mentioning is that if the `addFiller` command is running on a post-route database,
+it is recommended to be followed by a `ecoRoute` command to make the DRC clean.
+```console
+encounter 1> ecoRoute
+```
+
 ### Physical Verification
 A complete layout is now generated. DRC and LVS could be run for verification. Commands used here
 are `verifyGeometry`, `verifyConnectivity` and `verifyMetalFill`. It is more convenient to run the
@@ -765,6 +775,7 @@ This is accomplished by first using Quantus to generate detailed extraction data
 data to perform a final timing analysis based on Tempus timing analyzer. A Tempus license is
 required to run the timing signoff commands to generate timing reports [5].
 ```console
+encounter 1> setExtractRCMode -effortLevel signoff -lefTechFileMap leftechmapfile
 encounter 1> timeDesign -signoff
 encounter 1> timeDesign -signoff -hold
 ```
@@ -819,7 +830,7 @@ readily prepared for post-layout simulation. The previous invalid symbolic links
 The compilation process is the same as that in post-synthesis simulation. The behavior model of
 standard digital cell library will be included and the sdf file will be back-annotated to introduce
 cell and interconnect delays.
-```consile
+```console
 [SKELETON]$ make post_sim
 ```
 
