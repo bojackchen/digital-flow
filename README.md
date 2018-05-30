@@ -587,24 +587,44 @@ typical clock tree synthesis setup are as follows [5].
 `buffer_cells`, `inverter_cells`, `clock_gating_cells` and `use_inverters` properties.
 5. Create a clock tree spec using `create_ccopt_clock_tree_spec`.
 
+![CTS complete flow](cts_flow.png "CTS complete flow")
+
 #### SDC Update
 The new CTS engine, CCOpt-CTS, requires loading the post-CTS timing constraints prior to CTS.
 It is recommended to adjust the timing constraints accordingly before CTS rather than the old
 convention of updating timing constraints only after CTS.
+- Because CCOpt-CTS computes latency adjustments to maintain corrent inter-clock and I/O timing
+over the transition from ideal to propagated mode timing, the post-CTS timing constraints should
+**NOT** contain `set_propagated_clock` command. Also there is no need to run `update_io_latency`.
 - Update `set_clock_uncertainty` command to model only jitter since skew can now be calculated.
 - Remove any `set_clock_transition` command since transition is also calculated now.
 - Update `set_clock_latency` to mode only source latency because insertion delay is calculated.
 - Update derating and RC scaling factors if necessary. Make sure these factors are tuned properly.
+
+To validate the update of constraint mode, run the command below.
+```console
+encounter 1> update_constraint_mode -name cons_tt -sdc_files postCTS.sdc
+```
+
+#### Set up CTS
+There are plenty of setups you can specify before running CTS, and among them there are a few
+commonly used rules and properties listed below. Note that the non-default rules (NDRs) should
+be specified either via `add_ndr` command or via technology LEF file.
+```console
+encounter 1> create_route_type -name ... -non_default_rule ... -top_preferred_layer ...
+-bottom_preferred_layer ... -shield_net ... -bottom_shield_layer ...
+encounter 1> set_ccopt_property -net_type ... route_type ...
+encounter 1> set_ccopt_property inverter_cells ... use_inverters ... target_max_trans ...
+target_skew ...
+encounter 1> create_ccopt_clock_tree_spec
+encounter 1> ccopt_design -cts
+```
 
 #### Run CTS
 Run CCOpt-CTS with the following command. CCOpt-CTS will automatically route clock nets using
 NanoRoute, switch timing clocks to propagated mode and update source latencies to maintain
 correct I/O and inter-clock timing.
 ```console
-encounter 1> update_constraint_mode -name cons_tt -sdc_files postCTS.sdc
-encounter 1> set_ccopt_property ...
-encounter 1> create_ccopt_clock_tree_spec -file ccopt.spec
-encounter 1> source ccopt.spec
 encounter 1> ccopt_design -cts
 ```
 
@@ -623,6 +643,11 @@ Post-CTS optimization is run right after CTS to
 - Optimize remaining setup violations
 - Correct timing using propagated clock
 - Optimize hold violations
+
+#### SDC Update
+In an older flow the post-CTS timing constraints file is loaded now. However, in this new flow
+post-CTS timing constraints file is loaded and the `update_constraint_mode` command is run before
+CTS for the CCOpt-CTS engine to run correctly. Thus there is no need to do SDC update here.
 
 #### Setup Optimization
 Typically the same set of options from pre-CTS optimization applies to post-CTS optimization as
@@ -686,7 +711,8 @@ detailed routing
   - `setNanoRouteMode -drouteUseMultiCutViaEffort medium | high`
 
 Use the command `routeDesign` to perform detailed routing. This command automatically enables
-timing and SI driven routing mode.
+timing and SI driven routing mode, and also unfixes clock nets so that it can ECO route the clock
+nets after post-CTS optimization and resolve any DRC violation.
 ```console
 encounter 1> setNanoRouteMode ...
 encounter 1> routeDesign
