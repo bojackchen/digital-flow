@@ -21,7 +21,7 @@ VCS           = vcs +v2k -full64 -Mupdate -debug_all
 VCS_POST      = $(VCS) +neg_tchk -v $(LIB_PATH)/verilog/uk65lscllmvbbl_sdf21.v
 DC_SHELL      = dc_shell-xg-t -f
 MAKE          = make --silent
-RM            = rm -rv
+RM            = rm -rfv
 
 #---- initialization ----#
 init:
@@ -46,10 +46,10 @@ init:
 
 #---- clean up junk files ----#
 clean_syn:
-	@$(RM) $(SYN_PATH)/*.log && $(RM) $(SYN_PATH)/*.svf && $(RM) $(SYN_PATH)/reports
+	@$(RM) $(SYN_PATH)/*.log ; $(RM) $(SYN_PATH)/*.svf ; $(RM) $(SYN_PATH)/reports
 
 clean_soc:
-	@$(RM) $(SOC_PATH)/encounter.* && $(RM) $(SOC_PATH)/*[rR]eport? && $(RM) $(SOC_PATH)/qrc*.log && $(RM) $(SOC_PATH)/extLog* && $(RM) $(SOC_PATH)/.holdtw* && $(RM) $(SOC_PATH)/*.old
+	@$(RM) $(SOC_PATH)/encounter.* ; $(RM) $(SOC_PATH)/*[rR]eport? ; $(RM) $(SOC_PATH)/qrc*.log ; $(RM) $(SOC_PATH)/extLog* ; $(RM) $(SOC_PATH)/.holdtw* ; $(RM) $(SOC_PATH)/*.rpt* ; $(RM) $(SOC_PATH)/ostrich*
 
 clean:
 	@$(MAKE) clean_syn ; $(MAKE) clean_soc
