@@ -33,4 +33,4 @@ create_analysis_view -name func_cmax  -constraint_mode {cons_tt} -delay_corner {
 create_analysis_view -name func_rcmin -constraint_mode {cons_tt} -delay_corner {delay_rcmin}
 create_analysis_view -name func_rcmax -constraint_mode {cons_tt} -delay_corner {delay_rcmax}
 # Set analysis view
-set_analysis_view -setup {func_cmax func_rcmax} -hold {func_cmin func_rcmin}
+set_analysis_view -setup {func_cmax func_typ func_rcmax} -hold {func_cmin func_typ func_rcmin}
