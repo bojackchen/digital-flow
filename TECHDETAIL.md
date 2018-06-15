@@ -12,6 +12,7 @@
 
 ## Contact Resistance
 | Contact   | Resistance (Ohm) |
+| --------- | ---------------- |
 | CONT      | 30               |
 | V12 - V56 | 2                |
 | V67       | 0.8              |
@@ -19,6 +20,7 @@
 
 ## Sheet Resistance
 | Material  | Sheet Resistance (Ohm) |
+| --------- | ---------------------- |
 | PPLUS     | 9                      |
 | NPLUS     | 13                     |
 | ME1       | 0.17                   |
