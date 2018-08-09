@@ -46,7 +46,7 @@ used during each process but not included here. They will be declared at prerequ
 for each step if necessary.
 
 It is strongly recommended that you keep everything the same way. You can change the names and
-paths according to your flavor but you must modify `SKELETON/Makefile` accordingly. To start,
+paths according to your flavor but you must modify `SKELETON/Makefile` appropriately. To start,
 change the current working directory to the same directory as `Makefile`. Type `make init` in
 terminal to check the environment configurations.
 ```console
@@ -74,7 +74,7 @@ digital design flow.
 
 ### Tool Chain Setup
 As mentioned above, we have to use different sets of tool chains to complete each step. For
-[ipel](http://www.ece.ust.hk/~ipel) members, all the required tools are available on the Linux
+[IPEL](http://www.ece.ust.hk/~ipel) members, all the required tools are available on the Linux
 server.
 - Synopsys&reg; VCS
 - Synopsys&reg; Design Compiler
@@ -427,7 +427,7 @@ routing congestion.
 
 #### Floorplan
 Run the `floorPlan` command to specify your floorplan, where "1" is the aspect
-ratio, "0.6" is the core utilization and "8 8 8 8" is the space reserved for power rings at the
+ratio, "0.6" is the core utilization and "8 8 8 8" is the space reserved for power rings on the
 top, bottom, left and right. Apply proper values for your own design. You can also access through
 `Floorplan -> Specify Floorplan` menu.
 ```console
@@ -499,11 +499,18 @@ around the core area with VDD ring residing inside.
 
 Another optional power structure is the power stripe running vertically. If you need it, access
 through `Power -> Power Planning -> Add Stripe` and specify parameters similarly.
+```console
+encounter 1> addRing ...
+encounter 1> addStripe ...
+```
 
 #### Power Routing
 The `sroute` command is utilized to route the power structures. Access through
 `Route -> Special Route` to route the block pins, pad pins, pad rings, floating stripes, etc.
 After that you would have your power structures completed.
+```console
+encounter 1> sroute ...
+```
 
 ### Placement
 As the routability of the floorplan and powerplan stabilizes, you could place the standard
@@ -785,6 +792,7 @@ make the metal density more uniform. The commands used here are `addFiller`, `se
 One point worth mentioning is that if the `addFiller` command is running on a post-route database,
 it is recommended to be followed by a `ecoRoute` command to make the DRC clean.
 ```console
+encounter 1> addFiller ...
 encounter 1> ecoRoute
 ```
 
@@ -793,6 +801,10 @@ A complete layout is now generated. DRC and LVS could be run for verification. C
 are `verifyGeometry`, `verifyConnectivity` and `verifyMetalFill`. It is more convenient to run the
 commands through GUI menus. It is still recommended to run DRC and LVS in Cadence when you have
 imported the layout.
+```console
+encounter 1> verifyGeometry ...
+encounter 1> verifyConnectivity ...
+```
 
 Running LVS requires comparing the layout to the schematic. There are several things to do before
 running a successful LVS check.
