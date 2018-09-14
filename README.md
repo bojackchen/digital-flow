@@ -623,7 +623,6 @@ encounter 1> set_ccopt_property -net_type ... route_type ...
 encounter 1> set_ccopt_property routing_top_min_fanout 9999
 encounter 1> set_ccopt_property inverter_cells ... use_inverters ... target_max_trans ... target_skew ...
 encounter 1> create_ccopt_clock_tree_spec
-encounter 1> ccopt_design -cts
 ```
 
 #### Run CTS
