@@ -359,6 +359,7 @@ design data, and run `check_timing -verbose` to report timing problems that the 
 Engine (CTE) sees. Run `timeDesign -prePlace` command to check the zero wire-load model timing to
 get an idea of how much effort will be required to close timing later [5].
 ```console
+# This is optional
 encounter 1> check_timing -verbose
 encounter 1> checkDesign -all
 encounter 1> timeDesign -prePlace
@@ -385,6 +386,7 @@ flow. Set the extraction engine and effort level similarly. The first command is
 detailed routing which is also the default setting, while the second command should be run when
 detailed routing is finished.
 ```console
+# This is optional
 encounter 1> setExtractRCMode -engine preRoute
 encounter 1> setExtractRCMode -engine postRoute -effortLevel medium
 ```
@@ -458,6 +460,7 @@ If your design is apt to having placement or routability problems, it is strongl
 that a prototyping placement and routing be run in advance. Remember to reset `-fp` option back
 to `false` after trial placement.
 ```console
+# This is optional
 encounter 1> setPlaceMode -fp true
 encounter 1> placeDesign
 encounter 1> trailRoute -maxRouteLayer 6
@@ -563,19 +566,20 @@ utilization, etc.
 Run pre-CTS optimization through the `optDesign` command. By default this command will not fix
 max fanout violations. Use the `setOptMode` command to force it, and the command shown below
 also enables data to data checks. When optimization completes, you will see a summary of the timing
-results on the terminal. Additionally, you can also use the command `timeDesign -preCTS` to check
-the current timing.
+results on the terminal.
 ```console
 encounter 1> setOptMode -fixFanoutLoad true -enableDataToDataChecks true
 encounter 1> optDesign -preCTS
-encounter 1> timeDesign -preCTS
 ```
 
+Additionally, you can also use the command `timeDesign -preCTS` to check the current timing.
 Again, if timing violations exist, use Global Timing Debug (GTD) to analyze the problem. You can
 also focus timing optimization on specific paths using path groups. By default `optDesign` will
 temporarily generate 2 high effort path groups (reg2reg and reg2clkgate). The flow to create
 and optimize according to path groups is as follows:
 ```console
+# This is optional
+encounter 1> timeDesign -preCTS
 encounter 1> group_path -name path_group_name -from from_list -to to_list
 encounter 1> setPathGroupOptions ...
 encounter 1> optDesign -preCTS -incr
@@ -637,6 +641,7 @@ To report results after CTS, use the `timeDesign -postCTS` command. Reports on c
 skew groups can be obtained using the commands below. Besides, the CCOpt Clock Tree Debugger
 (CTD) permits interactive visualization and debugging of clock trees.
 ```console
+# This is optional
 encounter 1> timeDesign -postCTS
 encounter 1> report_ccopt_clock_trees -filename clock_trees.rpt
 encounter 1> report_ccopt_skew_groups -filename skew_groups.rpt
@@ -684,6 +689,7 @@ The hold timing results will also be printed out after optimization. It is not n
 all hold violations now. Another hold timing optimization could be performed at post-Route step.
 Run the `timeDesign` command to report the setup and hold timing analysis if necessary.
 ```console
+# This is optional
 encounter 1> timeDesign -postCTS
 encounter 1> timeDesign -postCTS -hold
 ```
@@ -742,6 +748,7 @@ QRC license.
 Use the following command to do a post-Route timing check on non-SI timing. Remember to reset
 `-SIAware` option back to `true` to enable SI optimization in the next step.
 ```console
+# This is optional
 encounter 1> setDelayCalMode -SIAware false
 encounter 1> timeDesign -postRoute
 encounter 1> timeDesign -postRoute -hold
@@ -820,6 +827,7 @@ This is accomplished by first using Quantus to generate detailed extraction data
 data to perform a final timing analysis based on Tempus timing analyzer. A Tempus license is
 required to run the timing signoff commands to generate timing reports [5].
 ```console
+# This is optional
 encounter 1> setExtractRCMode -effortLevel signoff -lefTechFileMap leftechmapfile
 encounter 1> timeDesign -signoff
 encounter 1> timeDesign -signoff -hold
