@@ -18,7 +18,8 @@ POST_SIM_PATH = $(WORK_PATH)/post_sim
 SYN_PATH      = $(WORK_PATH)/syn
 SOC_PATH      = $(WORK_PATH)/soc
 VCS           = vcs +v2k -full64 -Mupdate -debug_all
-VCS_POST      = $(VCS) +neg_tchk +sdfverbose -v $(LIB_PATH)/verilog/uk65lscllmvbbl_sdf21.v
+VCS_POST_SYN  = $(VCS) +neg_tchk +sdfverbose -v $(LIB_PATH)/verilog/uk65lscllmvbbl_sdf21.v
+VCS_POST_PR   = $(VCS) +neg_tchk +sdfverbose -v $(LIB_PATH)/verilog/uk65lscllmvbbl_sdf30.v
 DC_SHELL      = dc_shell-xg-t -f
 MAKE          = make --silent
 RM            = rm -rfv
@@ -38,7 +39,8 @@ init:
 	@echo SYN PATH      - $(SYN_PATH)
 	@echo SOC PATH      - $(SOC_PATH)
 	@echo VCS           - $(VCS)
-	@echo VCS POST      - $(VCS_POST)
+	@echo VCS POST SYN  - $(VCS_POST_SYN)
+	@echo VCS POST PR   - $(VCS_POST_PR)
 	@echo DC SHELL      - $(DC_SHELL)
 	@echo MAKE          - $(MAKE)
 	@echo RM            - $(RM)
@@ -63,7 +65,7 @@ pre_sim: init
 #---- behavioral simulation after synthesis ----#
 syn_sim: init
 	@cd $(SYN_SIM_PATH) &&\
-	$(VCS_POST) tb_$(TOP_MODULE)_syn.v -sdf typ:$(TOP_MODULE):$(TOP_MODULE).sdf &&\
+	$(VCS_POST_SYN) tb_$(TOP_MODULE)_syn.v -sdf typ:$(TOP_MODULE):$(TOP_MODULE).sdf &&\
 	./simv -gui &
 
 #---- synopsys logic synthesis ----#
@@ -74,7 +76,7 @@ synthesis: init
 #---- post simulation after encounter process ----#
 post_sim: init
 	@cd $(POST_SIM_PATH) &&\
-	$(VCS_POST) tb_$(TOP_MODULE)_encounter.v -sdf max:$(TOP_MODULE):$(TOP_MODULE).sdf &&\
+	$(VCS_POST_PR) tb_$(TOP_MODULE)_encounter.v -sdf max:$(TOP_MODULE):$(TOP_MODULE).sdf &&\
 	./simv -gui &
 
 #---- generate sp netlist ----#
