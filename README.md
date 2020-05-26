@@ -4,8 +4,8 @@ It contains a complete skeleton (the `SKELETON` directory, using umc065 process 
 you to do your own digital design, from RTL HDL design all the way to physical layout for tape-out.
 
 ## Disclaimer
-This so-called *"standard digital design flow"* is not for fully-digital design like CPU or others.
-Instead this digital design flow works for mixed-signal design where the digital part finally has
+This *"standard digital design flow"* is not for fully-digital design like CPU or others.
+Instead this digital design flow is targeted for mixed-signal design where the digital part finally has
 to be integrated with the analog part. So the ultimate production of this flow would be a compact
 digital layout with specified ports to be integrated with other analog layout.
 
@@ -14,10 +14,10 @@ A standard digital design flow consists of
 1. RTL HDL Design
 2. Behavior Simulation (platform: Synopsys&reg; VCS)
 3. Logic Synthesis (platform: Synopsys&reg; Design Compiler)
-4. Post-synthesis Simulation (platform: Synopsys&reg; VCS)
-5. Place & Route (platform: Cadence&reg; Encounter Digital Implementation)
-6. Post-layout Simulation (platform: Synopsys&reg; VCS)
-7. Integration with Analog Part (platform: Cadence&reg;)
+4. Post-Synthesis Simulation (platform: Synopsys&reg; VCS)
+5. Automatic Place & Route (platform: Cadence&reg; Encounter Digital Implementation)
+6. Post-Layout Simulation (platform: Synopsys&reg; VCS)
+7. Integration with Analog Part (platform: Cadence&reg; Virtuoso)
 
 Note that the above steps are iterative. For example, after logic synthesis, it is possible
 that the design no longer meets the design specification, thus you need to fall back to
@@ -39,7 +39,7 @@ the flow above.
 - Post-synthesis simulation &mdash; `SKELETON/syn_sim`
 - Place & route &mdash; `SKELETON/soc`
 - Post-layout simulation &mdash; `SKELETON/post_sim`
-- Integration with analog part &mdash; Inside Cadence
+- Integration with analog part &mdash; Inside Cadence Virtuoso
 
 Whereas `SKELETON/Makefile` is used for easier operation of each step. There are other resources
 used during each process but not included here. They will be declared at prerequisite section
@@ -55,7 +55,7 @@ terminal to check the environment configurations.
 
 ## Prerequisite
 In order to ensure that this tutorial works the best for you, a few prerequisites must be met.
-If you are not [IPEL](http://www.ece.ust.hk/~ipel) members or are not using the same process
+If you are not [IPEL](https://ipel.home.ece.ust.hk) members or are not using the same process
 as in this tutorial, it should still be adequate enough for you to establish everything
 accordingly.
 
@@ -67,7 +67,7 @@ Thus, you must get familiar with the command line working environment.
 
 Another prerequisite would be that you have all your tool chains properly set up and necessary
 resources regarding digital design provided by the foundry. For example, this tutorial is for
-[IPEL](http://www.ece.ust.hk/~ipel) members, and the tool chains are specified according to
+[IPEL](https://ipel.home.ece.ust.hk) members, and the tool chains are specified according to
 IPEL Linux servers. Furthermore, umc065 process is used as example, so if you are using
 other process, you are on your own to find out all the corresponding resources vital for
 digital design flow.
@@ -295,7 +295,7 @@ files and produced executive are stored in `SKELETON/syn_sim`. The waveform afte
 would present you signal latency as well as possible glitches. Make sure that **functionality**
 is still achieved, otherwise you may need to go back and find the reason.
 
-## Step 5: Place & Route
+## Step 5: Automatic Place & Route
 With a clean and optimized netlist, it is ready to transfer the design to its physical form,
 using the layout tool. The place & route process is complicated and can be condensed into
 several steps as listed below [1], [3], while **static timing analysis (STA)** is executed
@@ -463,7 +463,7 @@ to `false` after trial placement.
 # This is optional
 encounter 1> setPlaceMode -fp true
 encounter 1> placeDesign
-encounter 1> trailRoute -maxRouteLayer 6
+encounter 1> trialRoute -maxRouteLayer 6
 encounter 1> setPlaceMode -fp false
 ```
 
@@ -836,13 +836,13 @@ encounter 1> timeDesign -signoff -hold
 ### Output
 Congratulation! By now you should have your layout ready to be saved and exported. There are
 several products that are important to be exported from the current layout.
-- `SKELETON_encounter.v` is the final **v**erilog HDL netlist exported from EDI. This netlist is
+- `SKELETON_enc.v` is the final **v**erilog HDL netlist exported from EDI. This netlist is
 different from the netlist from synthesis because of the addition of buffers, inverters and other
 cells to fix timing and design rule violations. The layout should be checked against this
 schematic for LVS.
 - `SKELETON.sp` is the **sp**ice netlist of the schematic. It is converted from the verilog
 HDL netlist above. Run the `v2lvs` executive under `SKELETON/soc` to convert the current
-`SKELETON_encounter.v` to `SKELETON.sp`. LVS check in Cadence supports comparing the layout to
+`SKELETON_enc.v` to `SKELETON.sp`. LVS check in Cadence supports comparing the layout to
 spice netlist.
 - `SKELETON.enc` is the **enc**ounter design database. It can be restored later for further
 inspection of the current design.
@@ -866,10 +866,10 @@ different syntax.
 corresponding testbench and sdf file
   - Behavior model of the standard digital cell library is just the same as the case in
   post-synthesis simulation. During compilation it will be included.
-  - `SKELETON/post_sim/SKELETON_encounter.v` is a symbolic link to the gate-level netlist from
+  - `SKELETON/post_sim/SKELETON_enc.v` is a symbolic link to the gate-level netlist from
   encounter output. Note that this netlist is different from synthesis output.
-  - `SKELETON/post_sim/tb_SKELETON_encounter.v` is another symbolic link to the testbench for
-  post-layout simulation under `SKELETON/verilog/tb_SKELETON_encounter.v`.
+  - `SKELETON/post_sim/tb_SKELETON_enc.v` is another symbolic link to the testbench for
+  post-layout simulation under `SKELETON/verilog/tb_SKELETON_enc.v`.
   - `SKELETON/post_sim/SKELETON.sdf` is a symbolic link to the encounter-exported sdf file
   `SKELETON/soc/SKELETON.sdf`.
 
@@ -878,7 +878,7 @@ The working directory is the same directory as `Makefile`.
 ### Execution
 The outputs from encounter, specifically the gate-level netlist and the new sdf file should be
 readily prepared for post-layout simulation. The previous invalid symbolic links, namely
-`SKELETON/post_sim/SKELETON_encounter.v` and `SKELETON/post_sim/SKELETON.sdf` are now **valid**.
+`SKELETON/post_sim/SKELETON_enc.v` and `SKELETON/post_sim/SKELETON.sdf` are now **valid**.
 
 The compilation process is the same as that in post-synthesis simulation. The behavior model of
 standard digital cell library will be included and the sdf file will be back-annotated to introduce
