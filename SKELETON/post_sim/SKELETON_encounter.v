@@ -1,1 +1,0 @@
-../soc/SKELETON_encounter.v

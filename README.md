@@ -11,7 +11,7 @@ digital layout with specified ports to be integrated with other analog layout.
 
 ## Standard Digital Design Flow
 A standard digital design flow consists of
-1. RTL HDL Design
+1. RTL HDL Design (in verilog HDL language)
 2. Behavior Simulation (platform: Synopsys&reg; VCS)
 3. Logic Synthesis (platform: Synopsys&reg; Design Compiler)
 4. Post-Synthesis Simulation (platform: Synopsys&reg; VCS)
@@ -25,23 +25,23 @@ step 3 or even step 2 and 1 to find the reason and fix the problem.
 
 ## The SKELETON Working Directory
 The provided directory named `SKELETON` is a sample working directory for your digital design
-flow. Within this directory all the steps mentioned in previous section will be performed, 6
+flow. Within this directory all the steps mentioned in the previous section will be performed, 6
 directories are set for 6 steps respectively. The structure of `SKELETON` working directory is
 shown below.
 
-![SKELETON directory structure](dir_layout.png "SKELETON directory structure")
+![SKELETON directory structure](dir_tree.png "SKELETON directory structure")
 
 Now we can establish the relationships of each directory to each step (from step 1 to step 6) in
 the flow above.
-- RTL HDL design &mdash; `SKELETON/verilog`
+- RTL HDL design, including all testbenches &mdash; `SKELETON/verilog`
 - Behavior simulation &mdash; `SKELETON/pre_sim`
 - Logic synthesis &mdash; `SKELETON/syn`
 - Post-synthesis simulation &mdash; `SKELETON/syn_sim`
-- Place & route &mdash; `SKELETON/soc`
+- Automaric place & route &mdash; `SKELETON/soc`
 - Post-layout simulation &mdash; `SKELETON/post_sim`
-- Integration with analog part &mdash; Inside Cadence Virtuoso
+- Integration with the analog part &mdash; Inside Cadence Virtuoso
 
-Whereas `SKELETON/Makefile` is used for easier operation of each step. There are other resources
+`SKELETON/Makefile` is used for easier operation of each step. There are other resources
 used during each process but not included here. They will be declared at prerequisite section
 for each step if necessary.
 
@@ -85,7 +85,7 @@ they could be loaded by default each time you start a terminal.
 ```sh
 source /usr/eelocal/synopsys/vcs_mx-vi2014.03-2/.cshrc  # Synopsys VCS
 source /usr/eelocal/synopsys/syn-vi2013.12-sp5-5/.cshrc # Synopsys Design Compiler
-source /usr/eelocal/cadence/edi142/.cshrc               # Cadence  EDI
+source /usr/eelocal/cadence/edi142/.cshrc               # Cadence EDI
 ```
 
 Currently (May 2018) all these tools are up-to-date. Update the tools if newer versions are
@@ -148,12 +148,12 @@ be synthesized once and not touched again
 ## Step 2: Behavior Simulation
 ### Prerequisite
 - Tool: Synopsys&reg; VCS
-- Input: Verilog HDL design and corresponding testbench
+- Input: Verilog HDL design and the corresponding testbench
 
 The working directory is the same directory as `Makefile`.
 
 ### Execution
-When you have prepared your verilog HDL design and corresponding testbench files (for behavior
+When you have prepared your verilog HDL design and the corresponding testbench files (for behavior
 simulation it is `SKELETON/verilog/tb_SKELETON.v`), behavior simulation can be carried out to
 verify the functionality of your design. But remember that if you have multiple design files it is
 necessary to **either** include them all by modifying the `pre_sim` section in `SKELETON/Makefile`,
@@ -212,18 +212,18 @@ only limited solutions, and Design Compiler will try to find you one that meets 
 if possible. It is possible that the resultant design cannot satisfy all the constraints. In that
 case you should change your constraints accordingly.
 
-Some typical constraints that are commonly applied would be [1], [4]
+Some typical constraints [1], [4] that are commonly applied would be
 - create\_clk
-- create\_generated\_clock
 - set\_dont\_touch
 - set\_clock\_latency
 - set\_clock\_uncertainty
-- set\_propagated\_clock
 - set\_input\_delay
-- set\_driving\_cell
 - set\_output\_delay
+- set\_driving\_cell
 - set\_load
+- set\_max\_delay
 - set\_max\_capacitance
+- set\_max\_transition
 - set\_max\_area
 - set\_max\_fanout
 
@@ -255,7 +255,7 @@ are generated under `SKELETON/syn` to proceed.
 It is derived from your input design constraints.
 - `SKELETON.sdf` is a **s**tandard **d**elay **f**ormat file used later for post-synthesis
 simulation. It contains the delay information for all standard digital cells used in the design
-and also estimated delay for interconnections.
+and also the estimated delay for interconnections.
 - `SKELETON_syn.v` is the technology-specific gate-level **v**erilog netlist file derived from
 the original verilog HDL design. All the digital gates are from your specified synthesis library,
 meaning that it is indeed physically implementable.
@@ -301,20 +301,20 @@ using the layout tool. The place & route process is complicated and can be conde
 several steps as listed below [1], [3], while **static timing analysis (STA)** is executed
 across the whole flow to ensure timing closure at the end of the flow or mark the necessity
 of iteration between synthesis and P&R.
-- Data Preparation & Validation
-- Flow Preparation
-- Pre-Placement Optimization
+- Data preparation & validation
+- Flow preparation
+- Pre-placement optimization
 - Floorplanning
 - Powerplanning
 - Placement
-- Pre-CTS Optimization
-- Clock Tree Synthesis (CTS)
-- Post-CTS Optimization
-- Detailed Routing
-- Post-Route Optimization
-- Layout Finishing
-- Physical Verification
-- Timing Signoff
+- Pre-CTS optimization
+- Clock tree synthesis (CTS)
+- Post-CTS optimization
+- Detailed routing
+- Post-Route optimization
+- Layout finishing
+- Physical verification
+- Timing signoff
 
 A more complete EDI implementation flow for timing closure is shown below [5]. It is not
 necessary to include all for a small, less complicated design.
@@ -454,10 +454,10 @@ Skip: 2
 ```
 
 #### Trial Placement & Routing
-Although this is optional, it is still recommended that an initial, prototyping mode placement
+Although this is optional, it is still recommended that an initial, prototype mode placement
 be run for faster turnaround to get a baseline sense of cell density and routing congestion.
 If your design is apt to having placement or routability problems, it is strongly recommended
-that a prototyping placement and routing be run in advance. Remember to reset `-fp` option back
+that a prototype placement and routing be run in advance. Remember to reset `-fp` option back
 to `false` after trial placement.
 ```console
 # This is optional
@@ -510,7 +510,7 @@ encounter 1> addStripe ...
 #### Power Routing
 The `sroute` command is utilized to route the power structures. Access through
 `Route -> Special Route` to route the block pins, pad pins, pad rings, floating stripes, etc.
-After that you would have your power structures completed.
+After that you would have your power rails completed.
 ```console
 encounter 1> sroute ...
 ```
@@ -532,7 +532,7 @@ encounter 1> addWellTap -cell WT3W -cellInterval 10 -prefix WELLTAP
 The command `placeDesign` by default is timing-driven (`setPlaceMode -timingDriven true`) and
 pre-placement optimization is also enabled (`deleteBufferTree`, `deleteClockTree`). The option
 `-inPlaceOpt` would force in-place optimization to be performed. Note that if you have run trial
-placement and routing, it is important to reset `-fp` option after that.
+placement and routing, it is important to reset `-fp` option back to `false` after that.
 ```console
 encounter 1> placeDesign -inPlaceOpt
 ```
@@ -604,7 +604,7 @@ typical clock tree synthesis setup are as follows [5].
 The new CTS engine, CCOpt-CTS, requires loading the post-CTS timing constraints prior to CTS.
 It is recommended to adjust the timing constraints accordingly before CTS rather than the old
 convention of updating timing constraints only after CTS.
-- Because CCOpt-CTS computes latency adjustments to maintain corrent inter-clock and I/O timing
+- Because CCOpt-CTS computes latency adjustments to maintain current inter-clock and I/O timing
 over the transition from ideal to propagated mode timing, the post-CTS timing constraints should
 **NOT** contain `set_propagated_clock` command. Also there is no need to run `update_io_latency`.
 - Update `set_clock_uncertainty` command to model only jitter since skew can now be calculated.
@@ -625,7 +625,10 @@ be specified either via `add_ndr` command or via technology LEF file.
 encounter 1> create_route_type -name ... -non_default_rule ... -top_preferred_layer ... -bottom_preferred_layer ... -shield_net ... -bottom_shield_layer ...
 encounter 1> set_ccopt_property -net_type ... route_type ...
 encounter 1> set_ccopt_property routing_top_min_fanout 9999
-encounter 1> set_ccopt_property inverter_cells ... use_inverters ... target_max_trans ... target_skew ...
+encounter 1> set_ccopt_property inverter_cells ...
+encounter 1> set_ccopt_property use_inverters ...
+encounter 1> set_ccopt_property target_max_trans ...
+encounter 1> set_ccopt_property target_skew ...
 encounter 1> create_ccopt_clock_tree_spec
 ```
 
@@ -674,6 +677,7 @@ in setup slack happens, try to figure out the reason and double check the clock 
 Starting from post-CTS, timing optimization to fix hold violations can be performed. You could
 first run a timing analysis to report hold violations and then run the optimization if needed.
 ```console
+encounter 1> setOpeMode -holdTargetSlack -0.05
 encounter 1> optDesign -postCTS -hold
 ```
 
@@ -683,10 +687,10 @@ the effect on setup timing. Several suggestions to achieve hold timing closure w
 - Allow delay cells to be used
 - Make sure there is enough room for inserted cells
 - Make sure that the timing constraints are in sync for setup and hold
-- Control hold optimization target slack such as `setOptMode -holdTargetSlack -0.1`
+- Control hold optimization target slack such as `setOptMode -holdTargetSlack -0.05`
 
 The hold timing results will also be printed out after optimization. It is not necessary to fix
-all hold violations now. Another hold timing optimization could be performed at post-Route step.
+all hold violations now. Another hold timing optimization could be performed at post-route step.
 Run the `timeDesign` command to report the setup and hold timing analysis if necessary.
 ```console
 # This is optional
@@ -696,7 +700,7 @@ encounter 1> timeDesign -postCTS -hold
 
 ### Detailed Routing
 After post-CTS optimization, there should be few, if any, timing violations left to start
-detailed routing. Detailed routing targets at
+the detailed routing. Detailed routing targets at
 - Routing the design without DRC or LVS error (NanoRoute performs a DRC and cleans up
 violations)
 - Routing the design without degrading timing or signal integrity
@@ -757,7 +761,7 @@ encounter 1> setDelayCalMode -SIAware true
 
 ### Post-Route Optimization
 Before detailed routing there could be few timing violations left unfixed, and after detailed
-routing a bit more violations may come up due to [5]
+routing a bit more violations may come up [5] due to
 - Inaccurate prediction of the routing topology during pre-route optimization because of
 congestion-based detour routing
 - Incremental delays because of parasitics coupling
@@ -834,16 +838,15 @@ encounter 1> timeDesign -signoff -hold
 ```
 
 ### Output
-Congratulation! By now you should have your layout ready to be saved and exported. There are
-several products that are important to be exported from the current layout.
+Congratulations! So far you should have your layout ready to be saved and exported. There are
+several important products to be exported from the current layout.
 - `SKELETON_enc.v` is the final **v**erilog HDL netlist exported from EDI. This netlist is
 different from the netlist from synthesis because of the addition of buffers, inverters and other
 cells to fix timing and design rule violations. The layout should be checked against this
-schematic for LVS.
+schematic.
 - `SKELETON.sp` is the **sp**ice netlist of the schematic. It is converted from the verilog
 HDL netlist above. Run the `v2lvs` executive under `SKELETON/soc` to convert the current
-`SKELETON_enc.v` to `SKELETON.sp`. LVS check in Cadence supports comparing the layout to
-spice netlist.
+`SKELETON_enc.v` to `SKELETON.sp`. LVS check supports comparing the layout to a spice netlist.
 - `SKELETON.enc` is the **enc**ounter design database. It can be restored later for further
 inspection of the current design.
 - `SKELETON.sdf` is the new **s**tandard **d**elay **f**ormat file used for post-layout simulation.
@@ -867,9 +870,10 @@ corresponding testbench and sdf file
   - Behavior model of the standard digital cell library is just the same as the case in
   post-synthesis simulation. During compilation it will be included.
   - `SKELETON/post_sim/SKELETON_enc.v` is a symbolic link to the gate-level netlist from
-  encounter output. Note that this netlist is different from synthesis output.
-  - `SKELETON/post_sim/tb_SKELETON_enc.v` is another symbolic link to the testbench for
-  post-layout simulation under `SKELETON/verilog/tb_SKELETON_enc.v`.
+  encounter output `SKELETON/soc/SKELETON_enc.v`. Note that this netlist is different from
+  synthesis output.
+  - `SKELETON/post_sim/tb_SKELETON_enc.v` is a symbolic link to the testbench for post-layout
+  simulation under `SKELETON/verilog/tb_SKELETON_enc.v`.
   - `SKELETON/post_sim/SKELETON.sdf` is a symbolic link to the encounter-exported sdf file
   `SKELETON/soc/SKELETON.sdf`.
 
@@ -888,7 +892,7 @@ cell and interconnect delays.
 ```
 
 Check the compilation log for any syntax and also **sdf annotation error**. All the intermediate
-files and procuded executive are placed under `SKELETON/post_sim` and the DVE GUI will pop up
+files and produced executive are placed under `SKELETON/post_sim` and the DVE GUI will pop up
 upon successful compilation. The simulation result should be worse than that in post-synthesis
 simulation, but make sure **functionality** is still achieved and setup and hold timing checks
 are all met. Further iterations are needed if the circuit fails to work properly.

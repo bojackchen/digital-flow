@@ -95,7 +95,7 @@ check_design -nosplit > reports/check_design.rpt
 compile -exact_map -map_effort high -area_effort high
 #optimize_registers
 optimize_netlist -area
-change_names -rules verilog -hierarchy -verbose
+change_names -rules verilog -CAPS_ONLY -hierarchy -verbose
 
 #---- Saving .v .sdc .sdf files ----#
 # Synopsys internal database format .ddc file is skipped
