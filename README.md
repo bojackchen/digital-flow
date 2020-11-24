@@ -29,7 +29,7 @@ flow. Within this directory all the steps mentioned in the previous section will
 directories are set for 6 steps respectively. The structure of `SKELETON` working directory is
 shown below.
 
-![SKELETON directory structure](/image/dir_tree.png "SKELETON directory structure")
+![SKELETON directory structure](/image/dir_tree.png)
 
 Now we can establish the relationships of each directory to each step (from step 1 to step 6) in
 the flow above.
@@ -319,7 +319,7 @@ of iteration between synthesis and P&R.
 A more complete EDI implementation flow for timing closure is shown below [5]. It is not
 necessary to include all for a small, less complicated design.
 
-![Complete EDI timing closure flow](/image/encounter_flow.jpg "Complete EDI timing closure flow")
+![Complete EDI timing closure flow](/image/encounter_flow.jpg)
 
 ### Data Preparation & Validation
 This section outlines the data (libraries, constraints, netlist, etc.) required for implementing
@@ -598,7 +598,7 @@ typical clock tree synthesis setup are as follows [5].
 `buffer_cells`, `inverter_cells`, `clock_gating_cells` and `use_inverters` properties.
 5. Create a clock tree spec using `create_ccopt_clock_tree_spec`.
 
-![CTS complete flow](/image/cts_flow.png "CTS complete flow")
+![CTS complete flow](/image/cts_flow.png)
 
 #### SDC Update
 The new CTS engine, CCOpt-CTS, requires loading the post-CTS timing constraints prior to CTS.
