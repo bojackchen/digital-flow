@@ -29,7 +29,7 @@ flow. Within this directory all the steps mentioned in the previous section will
 directories are set for 6 steps respectively. The structure of `SKELETON` working directory is
 shown below.
 
-![SKELETON directory structure](https://raw.githubusercontent.com/bojackchen/digital-flow/master/image/dir_tree.png)
+![SKELETON directory structure](/image/dir_tree.png)
 
 Now we can establish the relationships of each directory to each step (from step 1 to step 6) in
 the flow above.
